@@ -6,7 +6,7 @@ iName        = (nameFirst nameRest*):r                                          
 isKeyword :x = ?self.is_keyword(x),
 name         = iName:n ~isKeyword(n)                                                           -> ["name", n]
 keyword      = iName:k isKeyword(k)                                                            -> [k, k]
-hexDigit     = char:x {self.hexDigits.indexOf(x.toLowerCase())}:v ?(v >= 0)                    -> v,
+hexDigit     = char:x {self.hexDigits.find(x.lower())}:v ?(v >= 0)                    -> v,
 hexLit       = hexLit:n hexDigit:d                                                             -> (n * 16 + d)
            | hexDigit,
 number       = ``0x'' hexLit:n                                                                 -> [`number, n]
@@ -145,13 +145,3 @@ semAction    = "{" (srcElem:s &srcElem -> s)+:ss expr:r sc "}" spaces     -> { s
            | "{" primExpr:r "}"                              spaces     -> r
            | primExpr:r                                      spaces     -> r
 }
-
-JSParser.hexDigits = "0123456789abcdef"
-
-
-JSParser.keywords = { }
-keywords = ["break", "case", "catch", "continue", "default", "delete", "do", "else", "finally", "for", "function", "if", "in",
-            "instanceof", "new", "return", "switch", "this", "throw", "try", "typeof", "var", "void", "while", "with", "ometa"]
-for (var idx = 0; idx < keywords.length; idx++)
-  JSParser.keywords[keywords[idx]] = true
-JSParser._isKeyword = function(k) { return this.keywords.hasProperty(k) && !Object.prototype.hasProperty(k) }

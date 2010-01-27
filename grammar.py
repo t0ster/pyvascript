@@ -7,10 +7,11 @@ pyva_grammer = open(grammar_path, 'r').read()
 
 class Grammer(OMeta.makeGrammar(pyva_grammar, {}))):
     def init(self):
-        self.keywords = set(("break", "case", "catch", "continue", "default",
-            "delete", "do", "else", "finally", "for", "function", "if", "in",
-            "instanceof", "new", "return", "switch", "this", "throw", "try",
-            "typeof", "var", "void", "while", "with", ))
+        self.keywords = set(('break', 'case', 'catch', 'continue', 'default',
+            'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in',
+            'instanceof', 'new', 'return', 'switch', 'this', 'throw', 'try',
+            'typeof', 'var', 'void', 'while', 'with', ))
+        self.hexDigits = '0123456789abcdef'
 
     def is_keyword(self, keyword):
          return keyword in self.keywords
