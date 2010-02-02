@@ -1,12 +1,12 @@
 fromTo :x :y = seq(x) (~seq(y) char)* seq(y),
 space        = super(#space) | fromTo('//', '\n') | fromTo('/*', '*/'),
-nameFirst    = letter | '$' | '_',
-nameRest     = nameFirst | digit,
-iName        = firstAndRest("nameFirst" "nameRest"):r                                           -> r.join(''),
-isKeyword :x = ?JSParser._isKeyword(x),
-name         = iName:n ~isKeyword(n)                                                           -> [`name, n],
-keyword      = iName:k isKeyword(k)                                                            -> [k, k],
-hexDigit     = char:x {self.hexDigits.indexOf(x.toLowerCase())}:v ?(v >= 0)                    -> v,
+nameFirst    = letter | '$' | '_'
+nameRest     = nameFirst | digit
+iName        = (nameFirst nameRest*):r                                           -> r.join('')
+isKeyword :x = ?self.is_keyword(x),
+name         = iName:n ~isKeyword(n)                                                           -> ["name", n]
+keyword      = iName:k isKeyword(k)                                                            -> [k, k]
+hexDigit     = char:x {self.hexDigits.find(x.lower())}:v ?(v >= 0)                    -> v,
 hexLit       = hexLit:n hexDigit:d                                                             -> (n * 16 + d)
            | hexDigit,
 number       = ``0x'' hexLit:n                                                                 -> [`number, n]
@@ -94,8 +94,10 @@ primExprHd   = "(" expr:e ")"                                                   
 json         = "{" listOf(`jsonBinding, ','):bs "}"                                            -> [`json].concat(bs),
 jsonBinding  = jsonPropName:n ":" expr:v                                                       -> [`binding, n, v],
 jsonPropName = "name" | "number" | "string",
-formal       = spaces "name",
-funcRest     = "(" listOf(`formal, ','):fs ")" "{" srcElems:body "}"                           -> [`func, fs, body],
+formal       = spaces name:n                                                                -> n[1]
+argComma  = formal:n ','                                                                    -> n
+args  = argComma*:l formal:n ','?                                                           -> l.append(n)
+funcRest     = "(" args:fs ")" ":" srcElems:body                           -> ["func", fs, body]
 sc           = spacesNoNl ('\n' | &'}' | end)
            | ";",
 binding      = "name":n ( "=" expr
@@ -133,9 +135,9 @@ stmt         = block
                       | empty -> [`get, 'undefined'] ):e sc                                  -> [`return, e]
            | expr:e sc                                                                       -> e
            | ";"                                                                             -> [`get, "undefined"],
-srcElem      = "function" "name":n funcRest:f                                                  -> [`var, n, f]
+srcElem      = "def" name:n funcRest:f                                                  -> [`var, n, f]
            | stmt
-srcElems     = srcElem*:ss                                                                     -> [`begin].concat(ss),
+srcElems    = srcElem*:ss                                                                     -> [`begin].concat(ss)
 
 grammar = srcElems:r                                      spaces end -> r,
 semAction    = "{" (srcElem:s &srcElem -> s)+:ss expr:r sc "}" spaces     -> { ss.push([`return, r])
@@ -143,13 +145,3 @@ semAction    = "{" (srcElem:s &srcElem -> s)+:ss expr:r sc "}" spaces     -> { s
            | "{" primExpr:r "}"                              spaces     -> r
            | primExpr:r                                      spaces     -> r
 }
-
-JSParser.hexDigits = "0123456789abcdef"
-
-
-JSParser.keywords = { }
-keywords = ["break", "case", "catch", "continue", "default", "delete", "do", "else", "finally", "for", "function", "if", "in",
-            "instanceof", "new", "return", "switch", "this", "throw", "try", "typeof", "var", "void", "while", "with", "ometa"]
-for (var idx = 0; idx < keywords.length; idx++)
-  JSParser.keywords[keywords[idx]] = true
-JSParser._isKeyword = function(k) { return this.keywords.hasProperty(k) && !Object.prototype.hasProperty(k) }

@@ -10,7 +10,16 @@ def to_string(string):
 
 grammar_path = os.path.join(os.path.dirname(__file__), 'grammar.ometa')
 pyva_grammar = open(grammar_path, 'r').read()
-Grammar = OMeta.makeGrammar(pyva_grammar, {})
+
+class Grammer(OMeta.makeGrammar(pyva_grammar, {}))):
+    keywords = set(('break', 'case', 'catch', 'continue', 'default',
+        'delete', 'do', 'else', 'finally', 'for', 'function', 'if', 'in',
+        'instanceof', 'new', 'return', 'switch', 'this', 'throw', 'try',
+        'typeof', 'var', 'void', 'while', 'with', ))
+    hexDigits = '0123456789abcdef'
+
+    def is_keyword(self, keyword):
+         return keyword in self.keywords
 
 translator_path = os.path.join(os.path.dirname(__file__), 'translator.ometa')
 pyva_translator = open(translator_path, 'r').read()
