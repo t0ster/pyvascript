@@ -1,0 +1,47 @@
+keyword = ['keyword' :k] -> k
+name = ['name' :n] -> n
+number = ['number' :n] -> '(%s)' % n
+string = ['string' :s] -> to_string(s)
+
+getitem = ['getitem' expr:idx expr:x] -> '%s[%s]' % (x, idx)
+var = ['var' name*:ns] -> '.'.join(ns)
+    | getitem
+
+return = ['return' expr:x] -> 'return ' + x
+
+array = ['array' expr*:xs] -> '[%s]' % ', '.join(xs)
+
+unop = ['unop' :op expr:x] -> '(%s(%s))' % (op, x)
+binop = ['binop' :op expr:x expr:y] -> '(%s %s %s)' % (x, op, y)
+preop = ['preop' :op (var | postop):x] -> op + x
+postop = ['postop' :op var:x] -> x + op
+
+assign = ['assign' [var*:vars] var:val] -> ' = '.join(vars) + ' = ' + val
+augassign = ['augassign' var:lhs :op var:rhs] -> '%s %s= %s' % (lhs, op, rhs)
+
+inline_if = ['inline_if' cond:c expr:t expr:f] -> '(%s ? %s : %s)' % (c, t, f)
+if = ['if' cond:c block:b block:e] -> 'if (%s) {\n%s\n}%s' % (c, b, ' else {\n%s\n}' if e else '')
+
+while = ['while' cond:c block:b] -> 'while (%s) {\n%s\n}' % (c, b)
+
+for    trans:x trans:arr curlyTrans:body            -> ('for(' + x + ' in ' + arr + ')' + body),
+begin    trans:x end                                  -> x,
+begin    (trans:x
+          ( (?(x[x.length - 1] == '}') | end) -> x
+          | empty                             -> (x  + ';')
+          )
+       )*:xs                                        -> ('{' + xs.join('') + '}'),
+func     :args curlyTrans:body                        -> ('(function (' + args.join(',') + ')' + body + ')'),
+call     trans:fn trans*:args                         -> (fn + '(' + args.join(',') + ')'),
+send     :msg trans:recv trans*:args                  -> (recv + '.' + msg + '(' + args.join(',') + ')'),
+new      :cls trans*:args                             -> ('new ' + cls + '(' + args.join(',') + ')'),
+var      :name trans:val                              -> ('var ' + name + '=' + val),
+throw    trans:x                                      -> ('throw ' + x),
+try      curlyTrans:x :name curlyTrans:c curlyTrans:f -> ('try ' + x + 'catch(' + name + ')' + c + 'finally' + f),
+json     trans*:props                                 -> ('({' + props.join(',') + '})'),
+binding  :name trans:val                              -> (name.toProgramString() + ': ' + val),
+switch   trans :x trans*:cases                         -> ('switch(' + x + '){' + cases.join(';') + '}'),
+case     trans:x trans:y                              -> ('case ' + x + ': '+ y),
+default          trans:y                              -> ('default: ' + y)
+
+grammar = stmt end
