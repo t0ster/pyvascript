@@ -1,23 +1,18 @@
 grammar = line*:l spaces end -> l
 
+hspace    = ' ' | '\t'
+vspace    = '\n'
+optspace  = ?(self.parenthesis) (hspace | '\\'? vspace | comment)* | (hspace | '\\' vspace)* comment?
+mandspace = ?(self.parenthesis) (hspace | '\\'? vspace | comment)+ | (hspace | '\\' vspace)+ comment?
+
 indent             = hspace*:h -> len(h)
 extraindent :start = indent:i ?(i > start) -> i
 
-hspace    = ' ' | '\t'
-vspace    = '\n'
-optspace  = ?(self.parenthesis) (hspace | '\\'? vspace)* | (hspace | '\\' vspace)*
-mandspace = ?(self.parenthesis) (hspace | '\\'? vspace)+ | (hspace | '\\' vspace)+
-
-emptyline = hspace* vspace
-line      = emptyline* indent:i stmtorcomment:s vspace -> s
+emptyline = hspace* ('\\' | comment)? vspace
+line      = emptyline* indent:i stmt:s optspace vspace -> s
 line_rest = (~vspace :x)*:x -> ''.join(x)
 
-stmtorcomment = comment
-              | stmt:s
-                (hspace* comment:c -> ['inlinecomment', s, c]
-                | -> s)
-
-stmt = expr
+stmt = expr:x -> x
 
 comment  = '#' line_rest:c -> ['comment', c]
 
@@ -52,19 +47,22 @@ unop  = optspace ('-' | '+' | '~'):op unop:e -> ['unop', op, e]
 
 primary = optspace
           (number
-          | funcall
+          | call
           | name
           | string
+          | list
+          | tuple
+          | dict
+          | set
           | '(' !(self.enter_paren()) expr:ix optspace ')' !(self.leave_paren()) -> ix)
 
-funcall = name:n optspace '(' optspace ')' -> ['call', n]
+call = name:n optspace '(' optspace ')' -> ['call', n]
 
 name_start   = letter | '$' | '_'
 name_rest    = name_start | digit
 iname        = name_start:s name_rest*:r   -> s + ''.join(r)
 iskeyword :x = ?(self.is_keyword(x))
 name         = iname:n ~iskeyword(n)       -> ['name', n]
-keyword      = iname:k iskeyword(k)        -> [k, k]
 
 escaped_char = '\\' :x -> ('\\' + x).decode('string_escape')
 string_in_quotes :e = match_string(e) (escaped_char | ~(?(len(e) != 3) vspace | match_string(e)) anything)*:c match_string(e) -> ['string', ''.join(c)]
@@ -77,5 +75,11 @@ number       = "0x" hexlit:n                                                   -
              | digit+:ws ('.' digit+:fs                                        -> ['number', float('%s.%s' % (''.join(ws), ''.join(fs)))]
                          | -> ['number'])                                      -> ['number', int(''.join(ws))]
 
-csvs   =  -> v
-array  = '[' csvs?:v ']' -> ['array', v]
+csv :rule = !(self.enter_paren()) optspace (apply(rule):e optspace ',' optspace -> e)*:es (?(rule != 'tupleexpr' or len(es)) optspace apply(rule):l !(es.append(l)))? optspace !(self.leave_paren()) -> es
+list  = '[' csv('expr'):v       ']' -> ['list'] + v
+tuple = '(' csv('tupleexpr'):v  ')' -> ['tuple'] + v
+dict  = '{' csv('dictexpr'):v   '}' -> ['dict'] + v
+set   = '{' csv('expr'):v       '}' -> ['set'] + v
+
+tupleexpr = expr
+dictexpr  = string:k optspace ':' optspace expr:v -> ['dictkv', k, v]

@@ -1,30 +1,33 @@
 grammar = stmt*:s -> '\n'.join(s) + '\n'
 
-stmt = comment
-     | inlinecomment
-     | expr:e             -> '%s;' % e
-expr  = [:t apply(t):ans] -> ans
+stmt = expr:e            -> '%s;' % e
+expr = [:t apply(t):ans] -> ans
 
-comment       = ['comment' :c]                     -> '//%s' % c
-inlinecomment = ['inlinecomment' expr:e comment:c] -> '%s; %s' % (e, c)
+unop     :op expr:x        -> '(%s%s)' % (self.op_map.get(op, op), x)
+binop    :op expr:x expr:y -> '(%s %s %s)' % (x, op, y)
+
+name      :n       -> n
+number    :n       -> str(n)
+hexnumber :n       -> hex(n)
+string    :s       -> self.to_string(s)
+
+call expr:fn expr*:args -> '%s(%s)' % (fn, ', '.join(args))
+
+list  expr*:xs -> '[%s]' % ', '.join(xs)
+tuple expr*:xs -> 'tuple([%s])' % ', '.join(xs)
+set   expr*:xs -> 'set([%s])' % ', '.join(xs)
+dict  expr*:xs -> '{%s}' % ', '.join(xs)
+
+dictkv expr:k expr:v -> '%s: %s' % (k, v)
 
 assign   expr:lhs :op expr:rhs -> '%s = %s'
 getitem  expr:x expr:fd        -> '%s[%s]' % (x, fd)
 
 self            -> 'this'
 break           -> 'break'
+pass            -> ''
 continue        -> 'continue'
 return   expr:x -> 'return %s' % x
-
-name      :n       -> n
-number    :n       -> str(n)
-hexnumber :n       -> hex(n)
-string    :s       -> self.to_string(s)
-array     expr*:xs -> '[%s]' % xs.join(', ')
-dict      expr*:xs -> '[%s]' % xs.join(', ')
-
-unop     :op expr:x        -> '(%s%s)' % (self.op_map.get(op, op), x)
-binop    :op expr:x expr:y -> '(%s %s %s)' % (x, op, y)
 
 if       expr:cond block:t block:e         -> 'if(%s) %s else %s' % (cond, t, e)
 ifExpr   expr:cond expr:t expr:e                   -> '(%s ? %s : %s)' % (cond, t, e)
@@ -33,6 +36,5 @@ for      expr:x expr:arr block:body            -> 'for(%s in %s) %s' % (x, arr, 
 
 func     :args block:body                        -> ('(function (' + args.join(',') + ')' + body + ')')
 
-call     expr:fn expr*:args                         -> '%s(%s)' % (fn, ', '.join(args))
 raise    expr:x                                      -> ('throw ' + x)
 try      block:x :name block:c block:f -> ('try ' + x + 'catch(' + name + ')' + c + 'finally' + f)
