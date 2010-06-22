@@ -1,6 +1,10 @@
-grammar = stmt*:s -> '\n'.join(s) + '\n'
+grammar = stmt*:s -> '%s\n' % '\n'.join(s)
 
-stmt = expr:e            -> '%s;' % e
+block = [stmt*:s] -> '{\n%s\n}' % '\n'.join(s)
+stmt = (['while' while:e]
+        | ['if' if:e]
+        | ['for' for:e]) -> e
+     | expr:e            -> '%s;' % e
 expr = [:t apply(t):ans] -> ans
 
 unop     :op expr:x        -> '(%s%s)' % (self.op_map.get(op, op), x)
@@ -11,6 +15,7 @@ number    :n       -> str(n)
 hexnumber :n       -> hex(n)
 string    :s       -> self.to_string(s)
 
+new expr:c              -> 'new %s' % c
 call expr:fn expr*:args -> '%s(%s)' % (fn, ', '.join(args))
 
 list  expr*:xs -> '[%s]' % ', '.join(xs)
@@ -29,10 +34,11 @@ pass            -> ''
 continue        -> 'continue'
 return   expr:x -> 'return %s' % x
 
-if       expr:cond block:t block:e         -> 'if(%s) %s else %s' % (cond, t, e)
+while expr:cond block:body        -> 'while(%s) %s' % (cond, ''.join(body))
+if    expr:cond block:t block?:e  -> 'if(%s) %s else %s' % (cond, t, e) if e else 'if(%s) %s' % (cond, t)
+for   expr:x expr:arr block:body  -> 'for(%s in %s) %s' % (x, arr, body)
+
 ifExpr   expr:cond expr:t expr:e                   -> '(%s ? %s : %s)' % (cond, t, e)
-while    expr:cond block:body                   -> 'while(%s) %s' % (cond, body)
-for      expr:x expr:arr block:body            -> 'for(%s in %s) %s' % (x, arr, body)
 
 func     :args block:body                        -> ('(function (' + args.join(',') + ')' + body + ')')
 

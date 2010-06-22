@@ -23,12 +23,19 @@ class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
     def __init__(self, *args, **kwargs):
         super(Grammar, self).__init__(*args, **kwargs)
         self.parenthesis = 0
+        self.indent_stack = [0]
 
     def enter_paren(self):
         self.parenthesis += 1
 
     def leave_paren(self):
         self.parenthesis -= 1
+
+    def dedent(self):
+        # A dedent comes after a '\n'. Put it back, so the outer line
+        # rule can handle the '\n'
+        self.indent_stack.pop()
+        self.input = self.input.prev()
 
     def is_keyword(self, keyword):
         return keyword in self.keywords

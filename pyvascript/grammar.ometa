@@ -5,16 +5,20 @@ vspace    = '\n'
 optspace  = ?(self.parenthesis) (hspace | '\\'? vspace | comment)* | (hspace | '\\' vspace)* comment?
 mandspace = ?(self.parenthesis) (hspace | '\\'? vspace | comment)+ | (hspace | '\\' vspace)+ comment?
 
-indent             = hspace*:h -> len(h)
-extraindent :start = indent:i ?(i > start) -> i
-
-emptyline = hspace* ('\\' | comment)? vspace
-line      = emptyline* indent:i stmt:s optspace vspace -> s
-line_rest = (~vspace :x)*:x -> ''.join(x)
-
-stmt = expr:x -> x
+indentation = hspace*:i ?(len(i) == self.indent_stack[-1])
+indent      = hspace*:i ?(len(i) > self.indent_stack[-1]) !(self.indent_stack.append(len(i)))
+dedent      = !(self.dedent())
 
 comment  = '#' line_rest:c -> ['comment', c]
+emptyline = hspace* ('\\' | comment)? vspace
+block     = emptyline* indent stmt:s optspace (vspace | end) line*:l dedent -> [s] + l
+line      = emptyline* indentation stmt:s optspace (vspace | end) -> s
+line_rest = (~vspace :x)*:x -> ''.join(x)
+
+stmt = pass | return | while | if | expr
+
+pass   = "pass"                    -> ['pass']
+return = "return" mandspace expr:e -> ['return', e]
 
 expr = orop
 
@@ -47,6 +51,7 @@ unop  = optspace ('-' | '+' | '~'):op unop:e -> ['unop', op, e]
 
 primary = optspace
           (number
+          | new
           | call
           | name
           | string
@@ -56,7 +61,8 @@ primary = optspace
           | set
           | '(' !(self.enter_paren()) expr:ix optspace ')' !(self.leave_paren()) -> ix)
 
-call = name:n optspace '(' optspace ')' -> ['call', n]
+new = "new" mandspace call:c -> ['new', c]
+call = name:n optspace '(' csv('expr'):p ')' -> ['call', n] + p
 
 name_start   = letter | '$' | '_'
 name_rest    = name_start | digit
@@ -65,8 +71,9 @@ iskeyword :x = ?(self.is_keyword(x))
 name         = iname:n ~iskeyword(n)       -> ['name', n]
 
 escaped_char = '\\' :x -> ('\\' + x).decode('string_escape')
-string_in_quotes :e = match_string(e) (escaped_char | ~(?(len(e) != 3) vspace | match_string(e)) anything)*:c match_string(e) -> ['string', ''.join(c)]
-string = string_in_quotes('"""') | string_in_quotes("'''") | string_in_quotes('"') | string_in_quotes("'")
+string3 :e = match_string(e) (escaped_char | ~(?(len(e) != 3) vspace | match_string(e)) anything)*:c match_string(e) -> ''.join(c)
+string2 = string3('"""') | string3("'''") | string3('"') | string3("'")
+string = (string2:s optspace -> s)+:s -> ['string', ''.join(s)]
 
 hexdigit     = letterOrDigit:x !(self.hex_digits.find(x.lower())):v ?(v >= 0)  -> v
 hexlit       = hexlit:n hexdigit:d                                             -> (n * 16 + d)
@@ -83,3 +90,6 @@ set   = '{' csv('expr'):v       '}' -> ['set'] + v
 
 tupleexpr = expr
 dictexpr  = string:k optspace ':' optspace expr:v -> ['dictkv', k, v]
+
+while = "while" mandspace expr:e optspace ':' block:b -> ['while', e, b]
+if    = "if" mandspace expr:e optspace ':' block:b -> ['if', e, b]
