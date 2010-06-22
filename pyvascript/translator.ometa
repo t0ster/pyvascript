@@ -4,6 +4,7 @@ block = [stmt*:s] -> '{\n%s\n}' % '\n'.join(s)
 stmt = (['while' while:e]
         | ['if' if:e]
         | ['for' for:e]) -> e
+     | ['pass'] -> ''
      | expr:e            -> '%s;' % e
 expr = [:t apply(t):ans] -> ans
 
@@ -30,12 +31,11 @@ getitem  expr:x expr:fd        -> '%s[%s]' % (x, fd)
 
 self            -> 'this'
 break           -> 'break'
-pass            -> ''
 continue        -> 'continue'
 return   expr:x -> 'return %s' % x
 
 while expr:cond block:body        -> 'while(%s) %s' % (cond, ''.join(body))
-if    expr:cond block:t block?:e  -> 'if(%s) %s else %s' % (cond, t, e) if e else 'if(%s) %s' % (cond, t)
+if    [expr:cond block:t] [([expr:c block:b] -> (c, b))*:ei] block?:e  -> ' '.join(['if (%s) %s' % (cond, t)] + ['else if (%s) %s' % x for x in ei] + (['else %s' % e] if e else []))
 for   expr:x expr:arr block:body  -> 'for(%s in %s) %s' % (x, arr, body)
 
 ifExpr   expr:cond expr:t expr:e                   -> '(%s ? %s : %s)' % (cond, t, e)

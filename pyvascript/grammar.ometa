@@ -91,5 +91,7 @@ set   = '{' csv('expr'):v       '}' -> ['set'] + v
 tupleexpr = expr
 dictexpr  = string:k optspace ':' optspace expr:v -> ['dictkv', k, v]
 
-while = "while" mandspace expr:e optspace ':' block:b -> ['while', e, b]
-if    = "if" mandspace expr:e optspace ':' block:b -> ['if', e, b]
+while = "while" mandspace expr:cond optspace ':' block:body -> ['while', cond, body]
+if    = "if" mandspace expr:cond optspace ':' block:body elif*:ei else?:e -> ['if', [cond, body]] + [ei] + ([e] if e else [])
+elif  = emptyline* indentation "elif" mandspace expr:cond optspace ':' block:body -> [cond, body]
+else  = emptyline* indentation "else" optspace ':' block:body -> body

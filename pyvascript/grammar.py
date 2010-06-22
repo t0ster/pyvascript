@@ -35,7 +35,9 @@ class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
         # A dedent comes after a '\n'. Put it back, so the outer line
         # rule can handle the '\n'
         self.indent_stack.pop()
-        self.input = self.input.prev()
+        input = self.input.prev()
+        if input.head()[0] == '\n':
+            self.input = input
 
     def is_keyword(self, keyword):
         return keyword in self.keywords
