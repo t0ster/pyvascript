@@ -13,16 +13,17 @@ class BaseGrammar(object):
         return cls(source).apply('grammar')[0]
 
 class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
-    keywords = set(('as', 'break', 'case', 'catch', 'class', 'continue',
+    keywords = set(('as', 'break', 'case', 'catch', 'class', 'continue', 'def',
         'default', 'del', 'delete', 'do', 'elif', 'else', 'except', 'finally',
-        'for', 'function', 'if', 'in', 'instanceof', 'new', 'pass', 'return',
-        'self', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void',
+        'for', 'function', 'if', 'in', 'instanceof', 'new', 'pass', 'raise',
+        'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void',
         'while', 'with', 'yield',))
     hex_digits = '0123456789abcdef'
 
     def __init__(self, *args, **kwargs):
         super(Grammar, self).__init__(*args, **kwargs)
         self.parenthesis = 0
+        self.parenthesis_stack = []
         self.indent_stack = [0]
 
     def enter_paren(self):
@@ -30,6 +31,21 @@ class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
 
     def leave_paren(self):
         self.parenthesis -= 1
+
+    def enter_deflambda(self, indent):
+        self.indent_stack.append(indent)
+        self.parenthesis_stack.append(self.parenthesis)
+        self.parenthesis = 0
+
+    def leave_deflambda(self):
+        self.indent_stack.pop()
+        self.parenthesis = self.parenthesis_stack.pop()
+
+    def get_indent(self):
+        for index in reversed(range(self.input.position)):
+            if self.input.data[index] == '\n':
+                return self.input.position - (index + 1)
+        return 0
 
     def dedent(self):
         # A dedent comes after a '\n'. Put it back, so the outer line
@@ -49,6 +65,23 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {})):
         'not': '!',
         'del': 'delete ',
     }
+    
+    binop_map = {
+    }
+
+    def make_if(self, cond, block, elifexprs, elseblock):
+        expr = ['if (%s) %s' % (cond, block)]
+        expr.extend('else if (%s) %s' % x for x in elifexprs)
+        if elseblock:
+            expr.append('else %s' % elseblock)
+        return ' '.join(expr)
+
+    def make_func(self, name, args, body):
+        if name:
+            func = '%s = function' % name[1]
+        else:
+            func = 'function'
+        return '%s(%s) %s' % (func, ', '.join(args), body)
 
     def to_string(self, string):
         string = repr(string)

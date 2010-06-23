@@ -15,7 +15,7 @@ block     = emptyline* indent stmt:s optspace (vspace | end) line*:l dedent -> [
 line      = emptyline* indentation stmt:s optspace (vspace | end) -> s
 line_rest = (~vspace :x)*:x -> ''.join(x)
 
-stmt = pass | return | while | if | expr
+stmt = pass | return | while | if | def | for | expr
 
 pass   = "pass"                    -> ['pass']
 return = "return" mandspace expr:e -> ['return', e]
@@ -54,6 +54,8 @@ primary = optspace
           | new
           | call
           | name
+          | lambda
+          | deflambda
           | string
           | list
           | tuple
@@ -91,7 +93,14 @@ set   = '{' csv('expr'):v       '}' -> ['set'] + v
 tupleexpr = expr
 dictexpr  = string:k optspace ':' optspace expr:v -> ['dictkv', k, v]
 
-while = "while" mandspace expr:cond optspace ':' block:body -> ['while', cond, body]
 if    = "if" mandspace expr:cond optspace ':' block:body elif*:ei else?:e -> ['if', [cond, body]] + [ei] + ([e] if e else [])
 elif  = emptyline* indentation "elif" mandspace expr:cond optspace ':' block:body -> [cond, body]
 else  = emptyline* indentation "else" optspace ':' block:body -> body
+
+while = "while" mandspace expr:cond optspace ':' block:body -> ['while', cond, body]
+
+for   = "for" mandspace name:var mandspace "in" mandspace expr:data optspace ':' block:body -> ['for', var, data, body]
+
+def   = !(self.get_indent()):i "def" mandspace !(self.indent_stack.append(i)) name:name optspace '(' csv('name'):args ')' optspace ':' block:body !(self.indent_stack.pop()) -> ['func', name, args, body]
+deflambda = !(self.get_indent()):i "def" ~~(hspace | '(') !(self.enter_deflambda(i)) optspace '(' csv('name'):args ')' optspace ':' block:body !(self.leave_deflambda()) -> ['func', None, args, body]
+lambda = "lambda" mandspace csv('name'):args optspace ':' expr:e -> ['func', None, args, [e]]

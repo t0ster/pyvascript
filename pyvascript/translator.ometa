@@ -20,8 +20,8 @@ new expr:c              -> 'new %s' % c
 call expr:fn expr*:args -> '%s(%s)' % (fn, ', '.join(args))
 
 list  expr*:xs -> '[%s]' % ', '.join(xs)
-tuple expr*:xs -> 'tuple([%s])' % ', '.join(xs)
-set   expr*:xs -> 'set([%s])' % ', '.join(xs)
+tuple expr*:xs -> '$py_tuple([%s])' % ', '.join(xs)
+set   expr*:xs -> '$py_set([%s])' % ', '.join(xs)
 dict  expr*:xs -> '{%s}' % ', '.join(xs)
 
 dictkv expr:k expr:v -> '%s: %s' % (k, v)
@@ -34,13 +34,10 @@ break           -> 'break'
 continue        -> 'continue'
 return   expr:x -> 'return %s' % x
 
-while expr:cond block:body        -> 'while(%s) %s' % (cond, ''.join(body))
-if    [expr:cond block:t] [([expr:c block:b] -> (c, b))*:ei] block?:e  -> ' '.join(['if (%s) %s' % (cond, t)] + ['else if (%s) %s' % x for x in ei] + (['else %s' % e] if e else []))
-for   expr:x expr:arr block:body  -> 'for(%s in %s) %s' % (x, arr, body)
+while expr:cond block:body -> 'while(%s) %s' % (cond, ''.join(body))
 
-ifExpr   expr:cond expr:t expr:e                   -> '(%s ? %s : %s)' % (cond, t, e)
+if [expr:cond block:t] [([expr:c block:b] -> (c, b))*:ei] block?:e -> self.make_if(cond, t, ei, e)
 
-func     :args block:body                        -> ('(function (' + args.join(',') + ')' + body + ')')
+for expr:var expr:data block:body -> '$py_for(%s, function(%s) %s)' % (data, var, body)
 
-raise    expr:x                                      -> ('throw ' + x)
-try      block:x :name block:c block:f -> ('try ' + x + 'catch(' + name + ')' + c + 'finally' + f)
+func :name [expr*:args] block:body -> self.make_func(name, args, body)
