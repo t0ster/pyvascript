@@ -60,7 +60,7 @@ class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
 
 translator_path = os.path.join(os.path.dirname(__file__), 'translator.ometa')
 pyva_translator = open(translator_path, 'r').read()
-class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {})):
+class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
     op_map = {
         'not': '!',
         'del': 'delete ',
@@ -68,6 +68,27 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {})):
     
     binop_map = {
     }
+
+    def __init__(self, *args, **kwargs):
+        super(Translator, self).__init__(*args, **kwargs)
+        self.indentation = 0
+
+    def indent(self):
+        self.indentation += 1
+        return self.indentation
+
+    def dedent(self):
+        self.indentation -= 1
+
+    def make_block(self, stmts, indentation):
+        indentstr = '  ' * indentation
+        sep = '\n%s' % indentstr
+        return '{\n%s%s\n%s}' % (indentstr, sep.join(stmts), '  ' * (indentation - 1))
+
+    def make_dict(self, items, indentation):
+        indentstr = '  ' * indentation
+        sep = ',\n%s' % indentstr
+        return '{\n%s%s\n%s}' % (indentstr, sep.join(items), '  ' * (indentation - 1))
 
     def make_if(self, cond, block, elifexprs, elseblock):
         expr = ['if (%s) %s' % (cond, block)]

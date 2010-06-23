@@ -1,12 +1,17 @@
 grammar = stmt*:s -> '%s\n' % '\n'.join(s)
 
-block = [stmt*:s] -> '{\n%s\n}' % '\n'.join(s)
-stmt = (['while' while:e]
+block = ~~[anything*] !(self.indent()):i [stmt*:s] !(self.dedent()) -> self.make_block(s, i)
+stmt = (  ['while' while:e]
         | ['if' if:e]
-        | ['for' for:e]) -> e
+        | ['for' for:e]
+        | ['try' try:e]
+        | ['func' func:e]) -> '%s\n' % e
      | ['pass'] -> ''
      | expr:e            -> '%s;' % e
 expr = [:t apply(t):ans] -> ans
+
+augassign :op expr:l expr:r -> '%s %s %s' % (l, op, r)
+varassign expr:l expr:r     -> '%s = %s' % (l, r)
 
 unop     :op expr:x        -> '(%s%s)' % (self.op_map.get(op, op), x)
 binop    :op expr:x expr:y -> '(%s %s %s)' % (x, op, y)
@@ -19,10 +24,10 @@ string    :s       -> self.to_string(s)
 new expr:c              -> 'new %s' % c
 call expr:fn expr*:args -> '%s(%s)' % (fn, ', '.join(args))
 
-list  expr*:xs -> '[%s]' % ', '.join(xs)
-tuple expr*:xs -> '$py_tuple([%s])' % ', '.join(xs)
-set   expr*:xs -> '$py_set([%s])' % ', '.join(xs)
-dict  expr*:xs -> '{%s}' % ', '.join(xs)
+list  !(self.indent()) expr*:xs !(self.dedent()) -> '[%s]' % ', '.join(xs)
+tuple !(self.indent()) expr*:xs !(self.dedent()) -> '$py_tuple([%s])' % ', '.join(xs)
+set   !(self.indent()) expr*:xs !(self.dedent()) -> '$py_set([%s])' % ', '.join(xs)
+dict  !(self.indent()):i expr*:xs !(self.dedent()) -> self.make_dict(xs, i)
 
 dictkv expr:k expr:v -> '%s: %s' % (k, v)
 
@@ -33,11 +38,15 @@ self            -> 'this'
 break           -> 'break'
 continue        -> 'continue'
 return   expr:x -> 'return %s' % x
+raise    expr:x -> 'throw %s' % x
 
-while expr:cond block:body -> 'while(%s) %s' % (cond, ''.join(body))
+while expr:cond block:body -> 'while (%s) %s' % (cond, ''.join(body))
 
 if [expr:cond block:t] [([expr:c block:b] -> (c, b))*:ei] block?:e -> self.make_if(cond, t, ei, e)
+ifexpr expr:cond expr:t expr:f -> '(%s ? %s : %s)' % (cond, t, f)
 
 for expr:var expr:data block:body -> '$py_for(%s, function(%s) %s)' % (data, var, body)
 
 func :name [expr*:args] block:body -> self.make_func(name, args, body)
+
+try block:body expr:err block:errbody block?:finbody -> 'try %s catch(%s) %s' % (body, err, errbody) + (' finally %s' % finbody if finbody else '')

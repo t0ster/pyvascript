@@ -15,13 +15,21 @@ block     = emptyline* indent stmt:s optspace (vspace | end) line*:l dedent -> [
 line      = emptyline* indentation stmt:s optspace (vspace | end) -> s
 line_rest = (~vspace :x)*:x -> ''.join(x)
 
-stmt = pass | return | while | if | def | for | expr
+stmt = pass | return | raise | while | if | def | for | try | augassign | assign
 
 pass   = "pass"                    -> ['pass']
 return = "return" mandspace expr:e -> ['return', e]
+raise  = "raise" mandspace expr:e  -> ['raise', e]
 
-expr = orop
-
+augassign = name:l optspace
+            ("+=" | "-=" | "*=" | "/=" | "//=" | "%=" | "^=" | "&=" | "|=" | "~=" | "<<=" | ">>="):op
+            optspace expr:r
+            -> ['augassign', op, l, r]
+assign = name:l optspace '=' optspace assign:r -> ['varassign', l, r]
+       | expr
+expr = ifexpr
+     | innerifexpr
+innerifexpr = orop
 orop  = orop:l optspace "or":op andop:r -> ['binop', op, l, r]
       | andop
 andop = andop:l optspace "and":op notop:r -> ['binop', op, l, r]
@@ -93,6 +101,8 @@ set   = '{' csv('expr'):v       '}' -> ['set'] + v
 tupleexpr = expr
 dictexpr  = string:k optspace ':' optspace expr:v -> ['dictkv', k, v]
 
+ifexpr = innerifexpr:t mandspace "if" mandspace innerifexpr:cond mandspace "else" mandspace expr:f -> ['ifexpr', cond, t, f]
+
 if    = "if" mandspace expr:cond optspace ':' block:body elif*:ei else?:e -> ['if', [cond, body]] + [ei] + ([e] if e else [])
 elif  = emptyline* indentation "elif" mandspace expr:cond optspace ':' block:body -> [cond, body]
 else  = emptyline* indentation "else" optspace ':' block:body -> body
@@ -104,3 +114,8 @@ for   = "for" mandspace name:var mandspace "in" mandspace expr:data optspace ':'
 def   = !(self.get_indent()):i "def" mandspace !(self.indent_stack.append(i)) name:name optspace '(' csv('name'):args ')' optspace ':' block:body !(self.indent_stack.pop()) -> ['func', name, args, body]
 deflambda = !(self.get_indent()):i "def" ~~(hspace | '(') !(self.enter_deflambda(i)) optspace '(' csv('name'):args ')' optspace ':' block:body !(self.leave_deflambda()) -> ['func', None, args, body]
 lambda = "lambda" mandspace csv('name'):args optspace ':' expr:e -> ['func', None, args, [e]]
+
+try = "try" optspace ':' block:body
+      emptyline* indentation "except" mandspace name:err optspace ':' block:errbody
+      (emptyline* indentation "finally" optspace ':' block)?:finbody
+      -> ['try', body, err, errbody] + ([finbody] if finbody else [])
