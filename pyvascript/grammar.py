@@ -67,11 +67,16 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
     }
     
     binop_map = {
+        'or': '||',
+        'and': '&&',
     }
 
     def __init__(self, *args, **kwargs):
         super(Translator, self).__init__(*args, **kwargs)
         self.indentation = 0
+        self.local_vars = set()
+        self.global_vars = set()
+        self.var_stack = []
 
     def indent(self):
         self.indentation += 1
@@ -80,10 +85,42 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
     def dedent(self):
         self.indentation -= 1
 
+    def is_pure_var_name(self, var):
+        return '.' not in var and '[' not in var
+
+    def register_var(self, var):
+        if self.is_pure_var_name(var) and var not in self.global_vars:
+            self.local_vars.add(var)
+
+    def register_vars(self, vars):
+        for var in vars:
+            self.register_var(var)
+
+    def register_globals(self, vars):
+        self.global_vars.update([var for var in vars if self.is_pure_var_name(var)])
+        self.local_vars -= self.global_vars
+
+    def push_vars(self):
+        self.var_stack.append((self.local_vars, self.global_vars))
+        self.local_vars = set()
+        self.global_vars = set()
+
+    def pop_vars(self):
+        self.local_vars, self.global_vars = self.var_stack.pop()
+
     def make_block(self, stmts, indentation):
         indentstr = '  ' * indentation
         sep = '\n%s' % indentstr
         return '{\n%s%s\n%s}' % (indentstr, sep.join(stmts), '  ' * (indentation - 1))
+
+    def make_func_block(self, stmts, indentation):
+        indentstr = '  ' * indentation
+        sep = '\n%s' % indentstr
+        if self.local_vars:
+            var = '%svar %s;\n%s' % (indentstr, ', '.join(sorted(self.local_vars)), indentstr)
+        else:
+            var = indentstr
+        return '{\n%s%s\n%s}' % (var, sep.join(stmts), '  ' * (indentation - 1))
 
     def make_dict(self, items, indentation):
         indentstr = '  ' * indentation
