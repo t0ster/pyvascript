@@ -15,9 +15,13 @@ block     = emptyline* indent stmt:s optspace (vspace | end) line*:l dedent -> [
 line      = emptyline* indentation stmt:s optspace (vspace | end) -> s
 line_rest = (~vspace :x)*:x -> ''.join(x)
 
-stmt = pass | global | return | raise | while | if | def | for | try | augassign | assign
+stmt = pass | global | continue | break | return | raise | while
+     | if | def | for | try | augassign | assign
 
 global = "global" mandspace innercsv('name'):names -> ['global', names]
+
+continue = "continue"              -> ['continue']
+break    = "break"                 -> ['break']
 
 pass   = "pass"                    -> ['pass']
 return = "return" mandspace expr:e -> ['return', e]
@@ -84,7 +88,7 @@ get = get:obj optspace '.' name:n               -> ['get', obj, n]
     | name
 
 new = "new" mandspace call:c -> ['new', c]
-call = primary:n optspace '(' csv('expr'):p ')' -> ['call', n] + p
+call = primary:n optspace '(' csv('expr'):p ')' -> ['call', n, p]
 
 name_start   = letter | '$' | '_'
 name_rest    = name_start | digit

@@ -26,12 +26,12 @@ number    :n       -> str(n)
 hexnumber :n       -> hex(n)
 string    :s       -> self.to_string(s)
 
-new expr:c              -> 'new %s' % c
-call expr:fn expr*:args -> '%s(%s)' % (fn, ', '.join(args))
+new  expr:c               -> 'new %s' % c
+call expr:fn [expr*:args] -> '%s(%s)' % (fn, ', '.join(args))
 
 list  !(self.indent()) expr*:xs !(self.dedent()) -> '[%s]' % ', '.join(xs)
-tuple !(self.indent()) expr*:xs !(self.dedent()) -> '$py_tuple([%s])' % ', '.join(xs)
-set   !(self.indent()) expr*:xs !(self.dedent()) -> '$py_set([%s])' % ', '.join(xs)
+tuple !(self.indent()) expr*:xs !(self.dedent()) -> '_$pyva_tuple([%s])' % ', '.join(xs)
+set   !(self.indent()) expr*:xs !(self.dedent()) -> '_$pyva_set([%s])' % ', '.join(xs)
 dict  !(self.indent()):i expr*:xs !(self.dedent()) -> self.make_dict(xs, i)
 
 dictkv expr:k expr:v -> '%s: %s' % (k, v)
@@ -47,7 +47,11 @@ while expr:cond block:body -> 'while (%s) %s' % (cond, ''.join(body))
 if [expr:cond block:t] [([expr:c block:b] -> (c, b))*:ei] block?:e -> self.make_if(cond, t, ei, e)
 ifexpr expr:cond expr:t expr:f -> '(%s ? %s : %s)' % (cond, t, f)
 
-for expr:var !(self.push_vars()) !(self.register_globals([var])) expr:data funcblock:body !(self.pop_vars()) -> '$py_for(%s, function(%s) %s)' % (data, var, body)
+for expr:var !(self.register_var(var))
+    ( ['call' ['name' 'range'] [expr+:r ?(len(r) <= 3)]] block:body -> self.make_for_range(var, r, body)
+    | ['call' ['name' 'reversed'] [['call' ['name' 'range'] [expr+:r ?(len(r) <= 3)]]]] block:body -> self.make_for_reversed_range(var, r, body)
+    | expr:data block:body -> self.make_for(var, data, body)
+    )
 
 func !(self.push_vars()) :name [expr*:args] !(self.register_globals(args)) funcblock:body !(self.pop_vars()) -> self.make_func(name, args, body)
 
