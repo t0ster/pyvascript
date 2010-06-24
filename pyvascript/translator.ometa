@@ -21,7 +21,7 @@ getitem expr:x [expr+:fd] -> '%s[%s]' % (x, ', '.join(fd))
 unop     :op expr:x        -> '(%s%s)' % (self.op_map.get(op, op), x)
 binop    :op expr:x expr:y -> '(%s %s %s)' % (x, self.binop_map.get(op, op), y)
 
-name      :n       -> n
+name      :n       -> self.name_map.get(n, n)
 number    :n       -> str(n)
 hexnumber :n       -> hex(n)
 string    :s       -> self.to_string(s)

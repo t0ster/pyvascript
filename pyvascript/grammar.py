@@ -2,6 +2,9 @@ import os.path
 from pymeta.grammar import OMeta
 import os
 
+def convert(source):
+    return Translator.parse_source(Grammar.parse_source(source))
+
 grammar_path = os.path.join(os.path.dirname(__file__), 'grammar.ometa')
 pyva_grammar = open(grammar_path, 'r').read()
 def p(s):
@@ -13,11 +16,12 @@ class BaseGrammar(object):
         return cls(source).apply('grammar')[0]
 
 class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
-    keywords = set(('as', 'break', 'case', 'catch', 'class', 'continue', 'def',
-        'default', 'del', 'delete', 'do', 'elif', 'else', 'except', 'finally',
-        'for', 'function', 'if', 'in', 'instanceof', 'new', 'pass', 'raise',
-        'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void',
-        'while', 'with', 'yield',))
+    keywords = set(('and', 'as', 'break', 'case', 'catch', 'class', 'continue',
+        'def', 'default', 'del', 'delete', 'do', 'elif', 'else', 'except',
+        'false', 'finally', 'for', 'function', 'if', 'in', 'is', 'instanceof',
+        'new', 'not', 'null', 'or', 'pass', 'raise', 'return', 'switch',
+        'this', 'throw', 'true', 'try', 'typeof', 'var', 'void', 'while',
+        'with', 'yield',))
     hex_digits = '0123456789abcdef'
 
     def __init__(self, *args, **kwargs):
@@ -65,10 +69,16 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
         'not': '!',
         'del': 'delete ',
     }
-    
     binop_map = {
         'or': '||',
         'and': '&&',
+        'is': '===',
+        'is not': '!===',
+    }
+    name_map = {
+        'None': 'null',
+        'True': 'true',
+        'False': 'false',
     }
 
     def __init__(self, *args, **kwargs):

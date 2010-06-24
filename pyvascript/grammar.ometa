@@ -27,11 +27,11 @@ pass   = "pass"                    -> ['pass']
 return = "return" mandspace expr:e -> ['return', e]
 raise  = "raise" mandspace expr:e  -> ['raise', e]
 
-augassign = get:l optspace
+augassign = assignget:l optspace
             ("+=" | "-=" | "*=" | "/=" | "//=" | "%=" | "^=" | "&=" | "|=" | "~=" | "<<=" | ">>="):op
             optspace expr:r
             -> ['augassign', op, l, r]
-assign = get:l optspace '=' optspace assign:r -> ['assign', l, r]
+assign = assignget:l optspace '=' optspace assign:r -> ['assign', l, r]
        | expr
 expr = ifexpr
      | innerifexpr
@@ -65,15 +65,21 @@ unop  = optspace ('-' | '+' | '~'):op unop:e -> ['unop', op, e]
 
 callable = optspace
          ( new
-         | call
          | lambda
          | deflambda
-         | primary
+         | get
          )
 
-primary = get
-        | '(' !(self.enter_paren()) expr:ix optspace ')' !(self.leave_paren()) -> ix
-        | immediate
+assignget = get:obj optspace '.' optspace name:n      -> ['get', obj, n]
+          | get:obj optspace '[' csv('expr'):elem ']' -> ['getitem', obj, elem]
+          | name
+
+get = get:obj optspace '.' optspace name:n               -> ['get', obj, n]
+    | get:obj optspace '[' csv('expr'):elem ']' -> ['getitem', obj, elem]
+    | get:obj optspace '(' csv('expr'):params ')'    -> ['call', obj, params]
+    | immediate
+
+primary = '(' !(self.enter_paren()) expr:ix optspace ')' !(self.leave_paren()) -> ix
 
 immediate = number
           | string
@@ -81,14 +87,10 @@ immediate = number
           | tuple
           | dict
           | set
-
-get = get:obj optspace '.' name:n               -> ['get', obj, n]
-    | get:obj optspace '[' csv('expr'):elem ']' -> ['getitem', obj, elem]
-    | immediate
-    | name
+          | name
 
 new = "new" mandspace call:c -> ['new', c]
-call = primary:n optspace '(' csv('expr'):p ')' -> ['call', n, p]
+call =  get:obj optspace '(' csv('expr'):params ')'    -> ['call', n, params]
 
 name_start   = letter | '$' | '_'
 name_rest    = name_start | digit
