@@ -2,7 +2,7 @@ import os.path
 from pymeta.grammar import OMeta
 import os
 
-def convert(source):
+def compile(source):
     return Translator.parse_source(Grammar.parse_source(source))
 
 grammar_path = os.path.join(os.path.dirname(__file__), 'grammar.ometa')
