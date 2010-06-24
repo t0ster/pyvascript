@@ -209,9 +209,3 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
         else:
             func = 'function'
         return '%s(%s) %s' % (func, ', '.join(args), body)
-
-    def to_string(self, string):
-        string = repr(string)
-        if string[0] == "'":
-            string = '"' + string[1:-1].replace('"', r'\"') + '"'
-        return string

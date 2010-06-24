@@ -1,4 +1,4 @@
-grammar = line*:l spaces end -> l
+grammar = line*:l emptyline* end -> l
 
 hspace    = ' ' | '\t'
 vspace    = '\n'
@@ -10,9 +10,9 @@ indent      = hspace*:i ?(len(i) > self.indent_stack[-1]) !(self.indent_stack.ap
 dedent      = !(self.dedent())
 
 comment  = '#' line_rest:c -> ['comment', c]
-emptyline = hspace* ('\\' | comment)? vspace
+emptyline = hspace* ('\\' | comment)?:c vspace
 block     = emptyline* indent stmt:s optspace (vspace | end) line*:l dedent -> [s] + l
-line      = emptyline* indentation stmt:s optspace (vspace | end) -> s
+line      = emptyline*:e indentation stmt:s optspace (vspace | end) -> s
 line_rest = (~vspace :x)*:x -> ''.join(x)
 
 stmt = pass | global | continue | break | return | raise | while
@@ -27,11 +27,11 @@ pass   = "pass"                    -> ['pass']
 return = "return" mandspace expr:e -> ['return', e]
 raise  = "raise" mandspace expr:e  -> ['raise', e]
 
-augassign = assignget:l optspace
+augassign = get:l optspace
             ("+=" | "-=" | "*=" | "/=" | "//=" | "%=" | "^=" | "&=" | "|=" | "~=" | "<<=" | ">>="):op
             optspace expr:r
             -> ['augassign', op, l, r]
-assign = assignget:l optspace '=' optspace assign:r -> ['assign', l, r]
+assign = get:l optspace '=' optspace assign:r -> ['assign', l, r]
        | expr
 expr = ifexpr
      | innerifexpr
@@ -70,16 +70,10 @@ callable = optspace
          | get
          )
 
-assignget = get:obj optspace '.' optspace name:n      -> ['get', obj, n]
-          | get:obj optspace '[' csv('expr'):elem ']' -> ['getitem', obj, elem]
-          | name
-
-get = get:obj optspace '.' optspace name:n               -> ['get', obj, n]
-    | get:obj optspace '[' csv('expr'):elem ']' -> ['getitem', obj, elem]
-    | get:obj optspace '(' csv('expr'):params ')'    -> ['call', obj, params]
+get = get:obj optspace '.' optspace name:n        -> ['get', obj, n]
+    | get:obj optspace '[' csv('expr'):elem ']'   -> ['getitem', obj, elem]
+    | get:obj optspace '(' csv('expr'):params ')' -> ['call', obj, params]
     | immediate
-
-primary = '(' !(self.enter_paren()) expr:ix optspace ')' !(self.leave_paren()) -> ix
 
 immediate = number
           | string
@@ -88,9 +82,9 @@ immediate = number
           | dict
           | set
           | name
+          | '(' !(self.enter_paren()) expr:ix optspace ')' !(self.leave_paren()) -> ix
 
-new = "new" mandspace call:c -> ['new', c]
-call =  get:obj optspace '(' csv('expr'):params ')'    -> ['call', n, params]
+new = "new" mandspace get:c -> ['new', c]
 
 name_start   = letter | '$' | '_'
 name_rest    = name_start | digit
