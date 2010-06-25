@@ -212,6 +212,7 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
 
     def make_func(self, name, args, body):
         if name:
+            self.register_var(name[1])
             func = '%s = function' % name[1]
         else:
             func = 'function'

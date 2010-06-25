@@ -4,8 +4,11 @@ from textwrap import dedent
 
 class PyvaTest(TestCase):
     def check(self, source, result):
-        source = dedent(compile(dedent(source))).strip()
-        result = dedent(result).strip()
+        source = '\n'.join(line for line in
+                           dedent(compile(dedent(source))).strip().splitlines()
+                           if line)
+        result = '\n'.join(line for line in dedent(result).strip().splitlines()
+                           if line)
         try:
             self.assertEqual(source, result)
         except:
@@ -49,9 +52,17 @@ class Test(PyvaTest):
         self.check("""
         while a == 3 or b is None and c == True or d != False:
             f()
+            if x:
+                break
+            continue
         """, """
         while ((((a == 3) || ((b === null) && (c == true))) || (d != false))) {
           f();
+          if (x) {
+            break;
+          }
+          
+          continue;
         }
         """)
 
@@ -129,4 +140,39 @@ class Test(PyvaTest):
           
           f(i);
         }
+        """)
+
+    def test_multi_line_lambda(self):
+        self.check("""
+        x.prototype = {
+            '__init__':
+            def(self):
+                def nested():
+                    return None
+                a = 3
+                x = a + 3
+                return x
+            ,
+            'add':
+            def(self, a, b, c):
+                return 1 + 2
+            ,
+        }
+        """, """
+        x.prototype = {
+          "__init__": function(self) {
+            var a, nested, x;
+            
+            nested = function() {
+              return null;
+            }
+            
+            a = 3;
+            x = (a + 3);
+            return x;
+          },
+          "add": function(self, a, b, c) {
+            return (1 + 2);
+          }
+        };
         """)
