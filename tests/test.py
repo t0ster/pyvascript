@@ -4,7 +4,12 @@ from textwrap import dedent
 
 class PyvaTest(TestCase):
     def check(self, source, result):
-        self.assertEqual(dedent(compile(dedent(source))).strip(), dedent(result).strip())
+        source = dedent(compile(dedent(source))).strip()
+        result = dedent(result).strip()
+        try:
+            self.assertEqual(source, result)
+        except:
+            raise AssertionError('\n%s\n!=\n%s' % (repr(source), repr(result)))
 
 class Test(PyvaTest):
     def test_dot(self):
@@ -56,7 +61,7 @@ class Test(PyvaTest):
             f()
         """, """
         var _$tmp1_end = 10;
-        for (i=0; i < _$tmp1_end; i++) {
+        for (i = 0; i < _$tmp1_end; i++) {
           f();
         }
         """)
@@ -66,7 +71,7 @@ class Test(PyvaTest):
             f()
         """, """
         var _$tmp1_start = 2, _$tmp2_end = 10;
-        for (i=_$tmp1_start; i < _$tmp2_end; i++) {
+        for (i = _$tmp1_start; i < _$tmp2_end; i++) {
           f();
         }
         """)
@@ -76,7 +81,7 @@ class Test(PyvaTest):
             f()
         """, """
         var _$tmp1_start = 2, _$tmp2_end = 10, _$tmp3_step = 2;
-        for (i=_$tmp1_start; i < _$tmp2_end; i += _$tmp3_step) {
+        for (i = _$tmp1_start; i < _$tmp2_end; i += _$tmp3_step) {
           f();
         }
         """)
@@ -97,7 +102,7 @@ class Test(PyvaTest):
             f()
         """, """
         var _$tmp1_start = (10) - 1, _$tmp2_end = 2;
-        for (i=_$tmp1_start; i >= _$tmp2_end; i--) {
+        for (i = _$tmp1_start; i >= _$tmp2_end; i--) {
           f();
         }
         """)
@@ -107,7 +112,21 @@ class Test(PyvaTest):
             f()
         """, """
         var _$tmp1_start = (10) - 1, _$tmp2_end = 2, _$tmp3_step = 2;
-        for (i=_$tmp1_start; i >= _$tmp2_end; i -= _$tmp3_step) {
+        for (i = _$tmp1_start; i >= _$tmp2_end; i -= _$tmp3_step) {
           f();
+        }
+        """)
+
+    def test_for_in(self):
+        self.check("""
+        for i in x.y[10].z():
+            f(i)
+        """, """
+        var _$tmp1_data = _$pyva_iter(x.y[10].z());
+        var _$tmp2_len = _$tmp1_data.length;
+        for (var _$tmp3_index = 0; _$tmp3_index < _$tmp2_len; _$tmp3_index++) {
+          i = _$tmp1_data[_$tmp3_index];
+          
+          f(i);
         }
         """)

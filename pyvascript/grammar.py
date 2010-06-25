@@ -158,13 +158,13 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
 
     def make_for(self, var, data, body):
         indentstr = '  ' * self.indentation
-        index = self.make_temp_var('index')
         datavar = self.make_temp_var('data')
         lenvar = self.make_temp_var('len')
+        index = self.make_temp_var('index')
         init = 'var %s = _$pyva_iter(%s);\n%svar %s = %s.length;\n%s' % (
             datavar, data, indentstr, lenvar, datavar, indentstr)
         body = body.replace('{', '{\n%s%s = %s[%s];\n' % (indentstr + '  ', var, datavar, index), 1)
-        return '%sfor (var %s=0; %s < %s; %s++) %s' % (init, index, index, lenvar, index, body)
+        return '%sfor (var %s = 0; %s < %s; %s++) %s' % (init, index, index, lenvar, index, body)
 
     def make_for_range(self, var, for_range, body):
         indentstr = '  ' * self.indentation
@@ -187,7 +187,7 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
 
         if init:
             init = '%s;\n%s' % (init, indentstr)
-        return '%sfor (%s=%s; %s < %s; %s) %s' % (init, var, start, var, end,
+        return '%sfor (%s = %s; %s < %s; %s) %s' % (init, var, start, var, end,
                                                   step, body)
 
     def make_for_reversed_range(self, var, for_range, body):
@@ -206,7 +206,7 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
             step = '%s -= %s' % (var, stepvar)
             init = 'var %s = (%s) - 1, %s = %s, %s = %s' % (start, for_range[1], end, for_range[0], stepvar, for_range[2])
 
-        return '%s;\n%sfor (%s=%s; %s >= %s; %s) %s' % (init, indentstr, var,
+        return '%s;\n%sfor (%s = %s; %s >= %s; %s) %s' % (init, indentstr, var,
                                                        start, var, end, step,
                                                        body)
 
