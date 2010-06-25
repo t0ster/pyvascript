@@ -204,7 +204,7 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
             end = self.make_temp_var('end')
             stepvar = self.make_temp_var('step')
             step = '%s -= %s' % (var, stepvar)
-            init = 'var %s = (%s - 1), %s = %s, %s = %s' % (start, for_range[1], end, for_range[0], stepvar, for_range[2])
+            init = 'var %s = (%s) - 1, %s = %s, %s = %s' % (start, for_range[1], end, for_range[0], stepvar, for_range[2])
 
         return '%s;\n%sfor (%s=%s; %s >= %s; %s) %s' % (init, indentstr, var,
                                                        start, var, end, step,
