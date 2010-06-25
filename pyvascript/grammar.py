@@ -1,6 +1,6 @@
 import os.path
 from pymeta.grammar import OMeta
-from pymeta.runtime import ParseError
+from pymeta.runtime import ParseError as OMetaParseError
 import os
 
 def compile(source):
@@ -11,13 +11,16 @@ pyva_grammar = open(grammar_path, 'r').read()
 def p(s):
     print s
 
+class ParseError(Exception):
+    pass
+
 class BaseGrammar(object):
     @classmethod
     def parse_source(cls, source):
         try:
             return cls(source).apply('grammar')[0]
-        except ParseError, e:
-            raise ValueError(e.formatError(source))
+        except OMetaParseError, e:
+            raise ParseError(e.formatError(source))
 
 class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
     keywords = set(('and', 'as', 'break', 'case', 'catch', 'class', 'continue',
