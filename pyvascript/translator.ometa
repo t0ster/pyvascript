@@ -24,10 +24,14 @@ binop    :op expr:x expr:y -> '(%s %s %s)' % (x, self.binop_map.get(op, op), y)
 name      :n       -> self.name_map.get(n, n)
 number    :n       -> str(n)
 hexnumber :n       -> hex(n)
-string    :s       -> self.to_string(s)
+string    :s       -> '"%s"' % s.encode('string_escape')
 
-new  expr:c               -> 'new %s' % c
-call expr:fn [expr*:args] -> '%s(%s)' % (fn, ', '.join(args))
+new  expr:c                  -> 'new %s' % c
+call (['name' 'JS'] ([['string' :js]] -> '(%s)' % js
+                    |[expr:js]        -> 'eval(%s)' % js
+                    )
+     | expr:fn [expr*:args]           -> '%s(%s)' % (fn, ', '.join(args))
+     )
 
 list  !(self.indent()) expr*:xs !(self.dedent()) -> '[%s]' % ', '.join(xs)
 tuple !(self.indent()) expr*:xs !(self.dedent()) -> '_$pyva_tuple([%s])' % ', '.join(xs)
