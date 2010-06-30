@@ -1,4 +1,3 @@
-import os.path
 from pymeta.grammar import OMeta
 from pymeta.runtime import ParseError as OMetaParseError
 import os
