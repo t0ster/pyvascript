@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 import os
 
 DESCRIPTION = 'Pythonic JavaScript syntax'
@@ -10,7 +10,7 @@ except:
     pass
 
 setup(name='pyvascript',
-      packages=find_packages(),
+      packages=['pyvascript'],
       author='Waldemar Kornewald',
       url='http://www.allbuttonspressed.com/projects/pyvascript',
       include_package_data=True,
