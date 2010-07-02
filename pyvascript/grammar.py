@@ -165,49 +165,61 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
         body = body.replace('{', '{\n%s%s = %s[%s];\n' % (indentstr + '  ', var, datavar, index), 1)
         return '%sfor (var %s = 0; %s < %s; %s++) %s' % (init, index, index, lenvar, index, body)
 
+    def temp_var_or_literal(self, name, var, init):
+        """
+        Returns either the literal if it's a literal or a temporary variable
+        storing the non-literal in addition to regitering the temporary with
+        init.
+        """
+        if var[0]:
+            # Literal
+            return var[1]
+        temp = self.make_temp_var(name)
+        init.append('%s = %s' % (temp, var[1]))
+        return temp
+
     def make_for_range(self, var, for_range, body):
+        # for_range is a list of tuples (bool:literal, str:js_code)
         indentstr = '  ' * self.indentation
-        step = '%s++' % var
-        init = ''
+        stepstr = '%s++' % var
+        init = []
         if len(for_range) == 1:
             start = 0
-            end = self.make_temp_var('end')
-            init = 'var %s = %s' % (end, for_range[0])
-        elif len(for_range) == 2:
-            start = self.make_temp_var('start')
-            end = self.make_temp_var('end')
-            init = 'var %s = %s, %s = %s' % (start, for_range[0], end, for_range[1])
-        elif len(for_range) == 3:
-            start = self.make_temp_var('start')
-            end = self.make_temp_var('end')
-            stepvar = self.make_temp_var('step')
-            step = '%s += %s' % (var, stepvar)
-            init = 'var %s = %s, %s = %s, %s = %s' % (start, for_range[0], end, for_range[1], stepvar, for_range[2])
+            end = self.temp_var_or_literal('end', for_range[0], init)
+        else:
+            start = for_range[0][1]
+            end = self.temp_var_or_literal('end', for_range[1], init)
+            if len(for_range) == 3:
+                step = self.temp_var_or_literal('step', for_range[2], init)
+                stepstr = '%s += %s' % (var, step)
 
+        initstr = ''
         if init:
-            init = '%s;\n%s' % (init, indentstr)
-        return '%sfor (%s = %s; %s < %s; %s) %s' % (init, var, start, var, end,
-                                                  step, body)
+            initstr = 'var %s;\n%s' % (', '.join(init), indentstr)
+
+        return '%sfor (%s = %s; %s < %s; %s) %s' % (initstr, var, start, var,
+                                                    end, stepstr, body)
 
     def make_for_reversed_range(self, var, for_range, body):
         indentstr = '  ' * self.indentation
-        step = '%s--' % var
         if len(for_range) == 1:
-            return '%s = %s;\n%swhile (%s--) %s' % (var, for_range[0], indentstr, var, body)
-        elif len(for_range) == 2:
-            start = self.make_temp_var('start')
-            end = self.make_temp_var('end')
-            init = 'var %s = (%s) - 1, %s = %s' % (start, for_range[1], end, for_range[0])
-        elif len(for_range) == 3:
-            start = self.make_temp_var('start')
-            end = self.make_temp_var('end')
-            stepvar = self.make_temp_var('step')
-            step = '%s -= %s' % (var, stepvar)
-            init = 'var %s = (%s) - 1, %s = %s, %s = %s' % (start, for_range[1], end, for_range[0], stepvar, for_range[2])
+            return '%s = %s;\n%swhile (%s--) %s' % (var, for_range[0][1], indentstr, var, body)
 
-        return '%s;\n%sfor (%s = %s; %s >= %s; %s) %s' % (init, indentstr, var,
-                                                       start, var, end, step,
-                                                       body)
+        init = []
+        start = for_range[1][1]
+        end = self.temp_var_or_literal('end', for_range[0], init)
+        if len(for_range) == 3:
+            step = self.temp_var_or_literal('step', for_range[2], init)
+            stepstr = '%s -= %s' % (var, step)
+        else:
+            stepstr = '%s--' % var
+
+        initstr = ''
+        if init:
+            initstr = 'var %s;\n%s' % (', '.join(init), indentstr)
+
+        return '%sfor (%s = (%s) - 1; %s >= %s; %s) %s' % (
+            initstr, var, start, var, end, stepstr, body)
 
     def make_func(self, name, args, body):
         if name:

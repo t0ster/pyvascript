@@ -66,13 +66,12 @@ class Test(PyvaTest):
         }
         """)
 
-    def test_for_range(self):
+    def test_for_range_literal(self):
         self.check("""
         for i in range(10):
             f()
         """, """
-        var _$tmp1_end = 10;
-        for (i = 0; i < _$tmp1_end; i++) {
+        for (i = 0; i < 10; i++) {
           f();
         }
         """)
@@ -81,8 +80,7 @@ class Test(PyvaTest):
         for i in range(2, 10):
             f()
         """, """
-        var _$tmp1_start = 2, _$tmp2_end = 10;
-        for (i = _$tmp1_start; i < _$tmp2_end; i++) {
+        for (i = 2; i < 10; i++) {
           f();
         }
         """)
@@ -91,29 +89,48 @@ class Test(PyvaTest):
         for i in range(2, 10, 2):
             f()
         """, """
-        var _$tmp1_start = 2, _$tmp2_end = 10, _$tmp3_step = 2;
-        for (i = _$tmp1_start; i < _$tmp2_end; i += _$tmp3_step) {
+        for (i = 2; i < 10; i += 2) {
           f();
         }
         """)
 
-    def test_for_reversed_range(self):
+    def test_for_range_nonliteral(self):
         self.check("""
-        for i in reversed(range(10)):
+        for i in range(x(10)):
             f()
         """, """
-        i = 10;
-        while (i--) {
+        var _$tmp1_end = x(10);
+        for (i = 0; i < _$tmp1_end; i++) {
           f();
         }
         """)
 
+        self.check("""
+        for i in range(x(2), x(10)):
+            f()
+        """, """
+        var _$tmp1_end = x(10);
+        for (i = x(2); i < _$tmp1_end; i++) {
+          f();
+        }
+        """)
+
+        self.check("""
+        for i in range(x(2), x(10), x(2)):
+            f()
+        """, """
+        var _$tmp1_end = x(10), _$tmp2_step = x(2);
+        for (i = x(2); i < _$tmp1_end; i += _$tmp2_step) {
+          f();
+        }
+        """)
+
+    def test_for_reversed_range_literal(self):
         self.check("""
         for i in reversed(range(2, 10)):
             f()
         """, """
-        var _$tmp1_start = (10) - 1, _$tmp2_end = 2;
-        for (i = _$tmp1_start; i >= _$tmp2_end; i--) {
+        for (i = (10) - 1; i >= 2; i--) {
           f();
         }
         """)
@@ -122,8 +139,38 @@ class Test(PyvaTest):
         for i in reversed(range(2, 10, 2)):
             f()
         """, """
-        var _$tmp1_start = (10) - 1, _$tmp2_end = 2, _$tmp3_step = 2;
-        for (i = _$tmp1_start; i >= _$tmp2_end; i -= _$tmp3_step) {
+        for (i = (10) - 1; i >= 2; i -= 2) {
+          f();
+        }
+        """)
+
+    def test_for_reversed_range_nonliteral(self):
+        self.check("""
+        for i in reversed(range(x(10))):
+            f()
+        """, """
+        i = x(10);
+        while (i--) {
+          f();
+        }
+        """)
+
+        self.check("""
+        for i in reversed(range(x(2), x(10))):
+            f()
+        """, """
+        var _$tmp1_end = x(2);
+        for (i = (x(10)) - 1; i >= _$tmp1_end; i--) {
+          f();
+        }
+        """)
+
+        self.check("""
+        for i in reversed(range(x(2), x(10), x(2))):
+            f()
+        """, """
+        var _$tmp1_end = x(2), _$tmp2_step = x(2);
+        for (i = (x(10)) - 1; i >= _$tmp1_end; i -= _$tmp2_step) {
           f();
         }
         """)
