@@ -1,5 +1,4 @@
-from setuptools import setup
-import os
+from setuptools import setup, find_packages
 
 DESCRIPTION = 'Pythonic JavaScript syntax'
 
@@ -10,10 +9,10 @@ except:
     pass
 
 setup(name='pyvascript',
-      packages=['pyvascript'],
+      packages=find_packages(exclude=('tests', 'tests.*')),
+      package_data={'pyvascript': ['*.ometa']},
       author='Waldemar Kornewald',
       url='http://www.allbuttonspressed.com/projects/pyvascript',
-      include_package_data=True,
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,
       platforms=['any'],
