@@ -42,11 +42,13 @@ andop = andop:l optspace "and":op notop:r -> ['binop', op, l, r]
       | notop
 notop = optspace "not":op mandspace notop:r -> ['unop', op, r]
       | cmpop
-comparison = "in"
-           | "not" mandspace "in" -> 'not in'
-           | "is" mandspace "not" -> 'is not'
-           | "is" | "<" | "<=" | ">" | ">=" | "!=" | "=="
-cmpop = cmpop:l optspace comparison:op mandspace bitor:r -> ['binop', op, l, r]
+comparison = ( "in"                 -> 'in'
+             | "not" mandspace "in" -> 'not in'
+             | "is" mandspace "not" -> 'is not'
+             | "is"                 -> 'is'
+             ):x mandspace -> x
+           | "<" | "<=" | ">" | ">=" | "!=" | "=="
+cmpop = cmpop:l optspace comparison:op optspace bitor:r -> ['binop', op, l, r]
       | bitor
 bitor = bitor:l optspace '|':op bitxor:r -> ['binop', op, l, r]
       | bitxor
