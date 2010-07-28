@@ -105,7 +105,7 @@ _$pyva_iter = function(iter_object) {
             for (var key in iter_object)
                 key_list.push(key);
             return key_list;
-           ;
+           
   }
 
 }

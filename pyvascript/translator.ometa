@@ -9,6 +9,7 @@ stmt = (  ['while' while:e]
         | ['func' func:e]) -> '%s\n' % e
      | ['global' [expr*:names]] !(self.register_globals(names)) -> ''
      | ['pass'] -> ''
+     | ['call' ~~(['name' 'JS'] anything*) call:e] -> e
      | expr:e            -> '%s;' % e
 expr = [:t apply(t):ans] -> ans
 
