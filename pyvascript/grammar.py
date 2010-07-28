@@ -85,11 +85,7 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
         'None': 'null',
         'True': 'true',
         'False': 'false',
-        'tuple': '_$pyva_tuple',
-        'list': '_$pyva_list',
-        'set': '_$pyva_set',
-        'dict': '_$pyva_dict',
-        'isinstance': '_$pyva_isinstance',
+        'self': 'this',
     }
 
     def __init__(self, *args, **kwargs):
@@ -228,8 +224,11 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
 
     def make_func(self, name, args, body):
         if name:
-            self.register_var(name[1])
-            func = '%s = function' % name[1]
+            name = self.name_map.get(name[1], name[1])
+            self.register_var(name)
+            func = '%s = function' % name
         else:
             func = 'function'
+        if args[0] == self.name_map.get('self', 'self'):
+            args = args[1:]
         return '%s(%s) %s' % (func, ', '.join(args), body)

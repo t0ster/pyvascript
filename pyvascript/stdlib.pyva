@@ -1,14 +1,35 @@
 def list(x):
-    return Array(x)
+    result = []
+    for item in x:
+        result.append(x)
+    return result
 
 def tuple(x):
-    return Array(x)
+    return list(x)
 
 def dict(x):
     result = {}
     for key in x:
         result[key] = x[key]
     return result
+
+# Add a few base functions, so we don't have a hard time switching
+# from Python.
+if not Array.prototype.append:
+    Array.prototype.append = Array.prototype.push
+if not Array.prototype.insert:
+    Array.prototype.insert = def(self, index, item):
+                                 self.splice(index, 0, item)
+if not Array.prototype.extend:
+    Array.prototype.extend = def(self, items):
+                                 for item in items:
+                                     self.append(item)
+if not Array.prototype.index:
+    Array.prototype.index = Array.prototype.indexOf
+
+if not String.prototype.join:
+    String.prototype.join = def(self, iterable):
+                                return iterable.join(self)
 
 def isinstance(item, cls):
     if cls is tuple or cls is list:
