@@ -1,0 +1,5 @@
+def _$pyva_iter(iter_object):
+    if isinstance(iter_object, (list, tuple)):
+        return iter_object
+    if isinstance(iter_object, dict):
+        
