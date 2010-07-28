@@ -29,7 +29,7 @@ def _$pyva_iter(iter_object):
     if isinstance(iter_object, dict):
         JS("""
             var key_list = [];
-            for (key in iter_object)
+            for (var key in iter_object)
                 key_list.push(key);
             return key_list;
            """)
