@@ -95,17 +95,16 @@ isinstance = function(item, cls) {
 }
 
 _$pyva_iter = function(iter_object) {
+  var key_list;
   if (isinstance(iter_object, [list, tuple])) {
     return iter_object;
   }
 
   if (isinstance(iter_object, dict)) {
-    
-            var key_list = [];
-            for (var key in iter_object)
-                key_list.push(key);
-            return key_list;
-           
+    key_list = [];
+    for (var key in iter_object)
+    key_list.append(key);
+    return key_list;
   }
 
 }
