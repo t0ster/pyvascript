@@ -27,7 +27,7 @@ hexnumber :n       -> hex(n)
 string    :s       -> '"%s"' % s.encode('string_escape')
 
 new  expr:c                  -> 'new %s' % c
-call (['name' 'JS'] ([['string' :js]] -> '(%s)' % js
+call (['name' 'JS'] ([['string' :js]] -> '%s' % js
                     |[expr:js]        -> 'eval(%s)' % js
                     )
      | expr:fn [expr*:args]           -> '%s(%s)' % (fn, ', '.join(args))
