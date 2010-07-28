@@ -85,6 +85,11 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
         'None': 'null',
         'True': 'true',
         'False': 'false',
+        'tuple': '_$pyva_tuple',
+        'list': '_$pyva_list',
+        'set': '_$pyva_set',
+        'dict': '_$pyva_dict',
+        'isinstance': '_$pyva_isinstance',
     }
 
     def __init__(self, *args, **kwargs):

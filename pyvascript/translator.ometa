@@ -34,7 +34,7 @@ call (['name' 'JS'] ([['string' :js]] -> '(%s)' % js
      )
 
 list  !(self.indent()) expr*:xs !(self.dedent()) -> '[%s]' % ', '.join(xs)
-tuple !(self.indent()) expr*:xs !(self.dedent()) -> '_$pyva_tuple([%s])' % ', '.join(xs)
+tuple !(self.indent()) expr*:xs !(self.dedent()) -> '[%s]' % ', '.join(xs)
 set   !(self.indent()) expr*:xs !(self.dedent()) -> '_$pyva_set([%s])' % ', '.join(xs)
 dict  !(self.indent()):i expr*:xs !(self.dedent()) -> self.make_dict(xs, i)
 
