@@ -10,7 +10,7 @@ except:
 
 setup(name='pyvascript',
       packages=find_packages(exclude=('tests', 'tests.*')),
-      package_data={'pyvascript': ['*.ometa']},
+      package_data={'pyvascript': ['*.ometa', '*.pyva']},
       author='Waldemar Kornewald',
       url='http://www.allbuttonspressed.com/projects/pyvascript',
       description=DESCRIPTION,
