@@ -47,10 +47,9 @@ def isinstance(item, cls):
 def _$pyva_iter(iter_object):
     if isinstance(iter_object, (list, tuple)):
         return iter_object
+
     if isinstance(iter_object, dict):
-        JS("""
-            var key_list = [];
-            for (var key in iter_object)
-                key_list.push(key);
-            return key_list;
-           """)
+        key_list = []
+        JS('for (var key in iter_object)')
+        key_list.append(key)
+        return key_list
