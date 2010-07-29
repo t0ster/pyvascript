@@ -207,7 +207,7 @@ class Test(PyvaTest):
         }
         """, """
         x.prototype = {
-          "__init__": function(self) {
+          "__init__": function() {
             var a, nested, x;
             
             nested = function() {
@@ -218,7 +218,7 @@ class Test(PyvaTest):
             x = (a + 3);
             return x;
           },
-          "add": function(self, a, b, c) {
+          "add": function(a, b, c) {
             return (1 + 2);
           }
         };

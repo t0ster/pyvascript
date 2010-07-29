@@ -229,6 +229,6 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
             func = '%s = function' % name
         else:
             func = 'function'
-        if args[0] == self.name_map.get('self', 'self'):
+        if args and args[0] == self.name_map.get('self', 'self'):
             args = args[1:]
         return '%s(%s) %s' % (func, ', '.join(args), body)
