@@ -17,4 +17,5 @@ setup(name='pyvascript',
       long_description=LONG_DESCRIPTION,
       platforms=['any'],
       install_requires=[],
+      scripts=['compile-pyva.py'],
 )
