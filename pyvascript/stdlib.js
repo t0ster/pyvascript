@@ -32,6 +32,22 @@ dict = function(x) {
   return result;
 }
 
+int = function(x) {
+  return parseInt(x);
+}
+
+float = function(x) {
+  return parseFloat(x);
+}
+
+str = function(x) {
+  return x.toString();
+}
+
+unicode = function(x) {
+  return str(x);
+}
+
 if ((!Array.prototype.append)) {
   Array.prototype.append = Array.prototype.push;
 }
@@ -67,15 +83,7 @@ if ((!String.prototype.join)) {
 }
 
 isinstance = function(item, cls) {
-  var cls_item;
-  if (((cls === tuple) || (cls === list))) {
-    cls = Array;
-  }
-
-  if ((cls === dict)) {
-    cls = Object;
-  }
-
+  var cls_item, isnumber;
   if (cls instanceof Array) {
     var _$tmp10_data = _$pyva_iter(cls);
     var _$tmp11_len = _$tmp10_data.length;
@@ -91,6 +99,19 @@ isinstance = function(item, cls) {
     return false;
   }
 
+  if (((cls === tuple) || (cls === list))) {
+    cls = Array;
+  } else if ((cls === dict)) {
+    cls = Object;
+  } else if (((cls === str) || (cls === unicode))) {
+    cls = String;
+  } else if (((cls === int) || (cls === float))) {
+    isnumber = (item.constructor === Number.prototype.constructor);
+    return (isnumber && (cls(item) == item));
+  } else {
+    return item instanceof cls;
+  }
+
   return (item.constructor === cls.prototype.constructor);
 }
 
@@ -100,12 +121,9 @@ _$pyva_iter = function(iter_object) {
     return iter_object;
   }
 
-  if (isinstance(iter_object, dict)) {
-    key_list = [];
-    for (var key in iter_object)
-    key_list.append(key);
-    return key_list;
-  }
-
+  key_list = [];
+  for (var key in iter_object)
+  key_list.append(key);
+  return key_list;
 }
 

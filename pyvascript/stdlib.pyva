@@ -13,6 +13,18 @@ def dict(x):
         result[key] = x[key]
     return result
 
+def int(x):
+    return parseInt(x)
+
+def float(x):
+    return parseFloat(x)
+
+def str(x):
+    return x.toString()
+
+def unicode(x):
+    return str(x)
+
 # Add a few base functions, so we don't have a hard time switching
 # from Python.
 if not Array.prototype.append:
@@ -32,24 +44,30 @@ if not String.prototype.join:
                                 return iterable.join(self)
 
 def isinstance(item, cls):
-    if cls is tuple or cls is list:
-        cls = Array
-    if cls is dict:
-        cls = Object
     if JS('cls instanceof Array'):
         for cls_item in cls:
             if isinstance(item, cls_item):
                 return True
         return False
 
+    if cls is tuple or cls is list:
+        cls = Array
+    elif cls is dict:
+        cls = Object
+    elif cls is str or cls is unicode:
+        cls = String
+    elif cls is int or cls is float:
+        isnumber = item.constructor is Number.prototype.constructor
+        return isnumber and cls(item) == item
+    else:
+        return JS('item instanceof cls')
     return item.constructor is cls.prototype.constructor
 
 def _$pyva_iter(iter_object):
     if isinstance(iter_object, (list, tuple)):
         return iter_object
 
-    if isinstance(iter_object, dict):
-        key_list = []
-        JS('for (var key in iter_object)')
-        key_list.append(key)
-        return key_list
+    key_list = []
+    JS('for (var key in iter_object)')
+    key_list.append(key)
+    return key_list
