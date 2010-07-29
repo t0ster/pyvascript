@@ -117,7 +117,7 @@ isinstance = function(item, cls) {
 
 _$pyva_iter = function(iter_object) {
   var key_list;
-  if (isinstance(iter_object, [list, tuple])) {
+  if ((isinstance(iter_object, list) || isinstance(iter_object, list))) {
     return iter_object;
   }
 

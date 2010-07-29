@@ -64,7 +64,9 @@ def isinstance(item, cls):
     return item.constructor is cls.prototype.constructor
 
 def _$pyva_iter(iter_object):
-    if isinstance(iter_object, (list, tuple)):
+    # Use multiple isinstance checks because otherwise this leads to
+    # infinite recursion
+    if isinstance(iter_object, list) or isinstance(iter_object, list):
         return iter_object
 
     key_list = []
