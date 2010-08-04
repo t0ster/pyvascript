@@ -38,6 +38,25 @@ class Test(PyvaTest):
         self.check('a = x.y[0].z[214].f().a', 'a = x.y[0].z[214].f().a;')
         self.check('a += x.y[0].z[214].f().a', 'a += x.y[0].z[214].f().a;')
 
+    def test_return(self):
+        self.check("""
+        def():
+            return
+        """, """
+        function() {
+          return;
+        }
+        """)
+
+        self.check("""
+        def():
+            return x
+        """, """
+        function() {
+          return x;
+        }
+        """)
+
     def test_if(self):
         self.check("""
         if a == 3 or b is None and c == True or d != False:

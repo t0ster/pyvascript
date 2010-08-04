@@ -46,6 +46,7 @@ self            -> 'this'
 break           -> 'break'
 continue        -> 'continue'
 return   expr:x -> 'return %s' % x
+return          -> 'return'
 raise    expr:x -> 'throw %s' % x
 
 while expr:cond block:body -> 'while (%s) %s' % (cond, ''.join(body))

@@ -25,6 +25,7 @@ break    = "break"                 -> ['break']
 
 pass   = "pass"                    -> ['pass']
 return = "return" mandspace expr:e -> ['return', e]
+       | "return" optspace ~~(vspace | end) -> ['return']
 raise  = "raise" mandspace expr:e  -> ['raise', e]
 
 augassign = get:l optspace

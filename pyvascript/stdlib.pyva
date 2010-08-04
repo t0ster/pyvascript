@@ -66,7 +66,7 @@ def isinstance(item, cls):
 def _$pyva_iter(iter_object):
     # Use multiple isinstance checks because otherwise this leads to
     # infinite recursion
-    if isinstance(iter_object, list) or isinstance(iter_object, list):
+    if isinstance(iter_object, list) or isinstance(iter_object, tuple):
         return iter_object
 
     key_list = []
