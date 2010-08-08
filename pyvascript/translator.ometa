@@ -6,7 +6,7 @@ stmt = (  ['while' while:e]
         | ['if' if:e]
         | ['for' for:e]
         | ['try' try:e]
-        | ['func' func:e]) -> '%s\n' % e
+        | ['func' funcstmt:e]) -> '%s\n' % e
      | ['global' [expr*:names]] !(self.register_globals(names)) -> ''
      | ['pass'] -> ''
      | ['call' ~~(['name' 'JS'] anything*) call:e] -> e
@@ -63,6 +63,7 @@ for expr:var !(self.register_var(var))
     | expr:data block:body -> self.make_for(var, data, body)
     )
 
-func !(self.push_vars()) :name [expr*:args] !(self.register_globals(args)) funcblock:body !(self.pop_vars()) -> self.make_func(name, args, body)
+func funcstmt:f -> '(%s)' % f
+funcstmt !(self.push_vars()) :name [expr*:args] !(self.register_globals(args)) funcblock:body !(self.pop_vars()) -> self.make_func(name, args, body)
 
 try block:body expr:err block:errbody block?:finbody -> 'try %s catch(%s) %s' % (body, err, errbody) + (' finally %s' % finbody if finbody else '')

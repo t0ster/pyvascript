@@ -226,7 +226,7 @@ class Test(PyvaTest):
         }
         """, """
         x.prototype = {
-          "__init__": function() {
+          "__init__": (function() {
             var a, nested, x;
             
             nested = function() {
@@ -236,9 +236,21 @@ class Test(PyvaTest):
             a = 3;
             x = (a + 3);
             return x;
-          },
-          "add": function(a, b, c) {
+          }),
+          "add": (function(a, b, c) {
             return (1 + 2);
-          }
+          })
         };
+        """)
+
+    def test_lambda_call(self):
+        self.check("""
+        (def():
+            global x
+            x = 5
+        )()
+        """, """
+        (function() {
+          x = 5;
+        })();
         """)

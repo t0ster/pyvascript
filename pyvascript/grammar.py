@@ -17,9 +17,10 @@ class BaseGrammar(object):
     @classmethod
     def parse_source(cls, source):
         try:
-            return cls(source).apply('grammar')[0]
-        except OMetaParseError, e:
-            raise ParseError(e.formatError(source))
+            parser = cls(source)
+            return parser.apply('grammar')[0]
+        except OMetaParseError:
+            raise ParseError(parser.currentError.formatError(source))
 
 class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
     keywords = set(('and', 'as', 'break', 'case', 'catch', 'class', 'continue',
@@ -79,7 +80,7 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
         'or': '||',
         'and': '&&',
         'is': '===',
-        'is not': '!===',
+        'is not': '!==',
     }
     name_map = {
         'None': 'null',

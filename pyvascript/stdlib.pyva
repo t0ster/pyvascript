@@ -25,6 +25,17 @@ def str(x):
 def unicode(x):
     return str(x)
 
+def len(x):
+    return x.length
+
+def _print(x):
+    if console and console.log:
+        console.log(x)
+
+def print():
+    for arg in arguments:
+        _print(arg)
+
 # Add a few base functions, so we don't have a hard time switching
 # from Python.
 if not Array.prototype.append:
@@ -66,7 +77,8 @@ def isinstance(item, cls):
 def _$pyva_iter(iter_object):
     # Use multiple isinstance checks because otherwise this leads to
     # infinite recursion
-    if isinstance(iter_object, list) or isinstance(iter_object, tuple):
+    if iter_object.callee and iter_object.length is not undefined or \
+            isinstance(iter_object, list) or isinstance(iter_object, tuple):
         return iter_object
 
     key_list = []
