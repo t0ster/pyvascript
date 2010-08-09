@@ -18,6 +18,11 @@ class Test(PyvaTest):
     def test_dot(self):
         self.check('x.y.z', 'x.y.z;')
 
+    def test_delete(self):
+        self.check('del x[a]', 'delete x[a];')
+        self.check('del x["a"]', 'delete x["a"];')
+        self.check('del x.a', 'delete x.a;')
+
     def test_getitem(self):
         self.check('x[0]', 'x[0];')
         self.check('x[0][bla]', 'x[0][bla];')

@@ -74,7 +74,6 @@ pyva_translator = open(translator_path, 'r').read()
 class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
     op_map = {
         'not': '!',
-        'del': 'delete ',
     }
     binop_map = {
         'or': '||',
@@ -87,6 +86,8 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
         'True': 'true',
         'False': 'false',
         'self': 'this',
+        'int': '_$pyva_int',
+        'float': '_$pyva_float',
     }
 
     def __init__(self, *args, **kwargs):

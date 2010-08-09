@@ -32,11 +32,11 @@ dict = function(x) {
   return result;
 }
 
-int = function(x) {
+_$pyva_int = function(x) {
   return parseInt(x);
 }
 
-float = function(x) {
+_$pyva_float = function(x) {
   return parseFloat(x);
 }
 
@@ -48,28 +48,51 @@ unicode = function(x) {
   return str(x);
 }
 
+len = function(x) {
+  return x.length;
+}
+
+_print = function(x) {
+  if ((console && console.log)) {
+    console.log(x);
+  }
+
+}
+
+print = function() {
+  var arg;
+  var _$tmp7_data = _$pyva_iter(arguments);
+  var _$tmp8_len = _$tmp7_data.length;
+  for (var _$tmp9_index = 0; _$tmp9_index < _$tmp8_len; _$tmp9_index++) {
+    arg = _$tmp7_data[_$tmp9_index];
+
+    _print(arg);
+  }
+
+}
+
 if ((!Array.prototype.append)) {
   Array.prototype.append = Array.prototype.push;
 }
 
 if ((!Array.prototype.insert)) {
-  Array.prototype.insert = function(index, item) {
+  Array.prototype.insert = (function(index, item) {
     this.splice(index, 0, item);
-  };
+  });
 }
 
 if ((!Array.prototype.extend)) {
-  Array.prototype.extend = function(items) {
+  Array.prototype.extend = (function(items) {
     var item;
-    var _$tmp7_data = _$pyva_iter(items);
-    var _$tmp8_len = _$tmp7_data.length;
-    for (var _$tmp9_index = 0; _$tmp9_index < _$tmp8_len; _$tmp9_index++) {
-      item = _$tmp7_data[_$tmp9_index];
+    var _$tmp10_data = _$pyva_iter(items);
+    var _$tmp11_len = _$tmp10_data.length;
+    for (var _$tmp12_index = 0; _$tmp12_index < _$tmp11_len; _$tmp12_index++) {
+      item = _$tmp10_data[_$tmp12_index];
 
       this.append(item);
     }
 
-  };
+  });
 }
 
 if ((!Array.prototype.index)) {
@@ -77,18 +100,18 @@ if ((!Array.prototype.index)) {
 }
 
 if ((!String.prototype.join)) {
-  String.prototype.join = function(iterable) {
+  String.prototype.join = (function(iterable) {
     return iterable.join(this);
-  };
+  });
 }
 
 isinstance = function(item, cls) {
   var cls_item, isnumber;
   if (cls instanceof Array) {
-    var _$tmp10_data = _$pyva_iter(cls);
-    var _$tmp11_len = _$tmp10_data.length;
-    for (var _$tmp12_index = 0; _$tmp12_index < _$tmp11_len; _$tmp12_index++) {
-      cls_item = _$tmp10_data[_$tmp12_index];
+    var _$tmp13_data = _$pyva_iter(cls);
+    var _$tmp14_len = _$tmp13_data.length;
+    for (var _$tmp15_index = 0; _$tmp15_index < _$tmp14_len; _$tmp15_index++) {
+      cls_item = _$tmp13_data[_$tmp15_index];
 
       if (isinstance(item, cls_item)) {
         return true;
@@ -105,7 +128,7 @@ isinstance = function(item, cls) {
     cls = Object;
   } else if (((cls === str) || (cls === unicode))) {
     cls = String;
-  } else if (((cls === int) || (cls === float))) {
+  } else if (((cls === _$pyva_int) || (cls === _$pyva_float))) {
     isnumber = (item.constructor === Number.prototype.constructor);
     return (isnumber && (cls(item) == item));
   } else {
@@ -117,7 +140,7 @@ isinstance = function(item, cls) {
 
 _$pyva_iter = function(iter_object) {
   var key_list;
-  if ((isinstance(iter_object, list) || isinstance(iter_object, list))) {
+  if ((((iter_object.callee && (iter_object.length !== undefined)) || isinstance(iter_object, list)) || isinstance(iter_object, tuple))) {
     return iter_object;
   }
 
@@ -125,5 +148,17 @@ _$pyva_iter = function(iter_object) {
   for (var key in iter_object)
   key_list.append(key);
   return key_list;
+}
+
+_$pyva_getslice = function(item, start, end) {
+  if ((start === null)) {
+    start = 0;
+  }
+
+  if ((end === null)) {
+    return item.slice(start);
+  }
+
+  return item.slice(start, end);
 }
 

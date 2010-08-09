@@ -85,3 +85,10 @@ def _$pyva_iter(iter_object):
     JS('for (var key in iter_object)')
     key_list.append(key)
     return key_list
+
+def _$pyva_getslice(item, start, end):
+    if start is None:
+        start = 0
+    if end is None:
+        return item.slice(start)
+    return item.slice(start, end)

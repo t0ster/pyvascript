@@ -15,13 +15,14 @@ block     = emptyline* indent stmt:s optspace (vspace | end) line*:l dedent -> [
 line      = emptyline*:e indentation stmt:s optspace (vspace | end) -> s
 line_rest = (~vspace :x)*:x -> ''.join(x)
 
-stmt = pass | global | continue | break | return | raise | while
+stmt = pass | global | continue | break | return | raise | while | del
      | if | def | for | try | augassign | assign
 
 global = "global" mandspace innercsv('name'):names -> ['global', names]
 
 continue = "continue"              -> ['continue']
 break    = "break"                 -> ['break']
+del      = "del" mandspace get:x   -> ['del', x]
 
 pass   = "pass"                    -> ['pass']
 return = "return" mandspace expr:e -> ['return', e]
@@ -73,10 +74,17 @@ callable = optspace
          | get
          )
 
-get = get:obj optspace '.' optspace name:n        -> ['get', obj, n]
-    | get:obj optspace '[' csv('expr'):elem ']'   -> ['getitem', obj, elem]
-    | get:obj optspace '(' csv('expr'):params ')' -> ['call', obj, params]
-    | immediate
+get = get2:g ( ?(g[0] in ('getattr', 'getitem')) -> ['get', g]
+             | -> g
+             )
+
+slice = expr?:start optspace ':' optspace expr?:end -> ['slice', start, end]
+      | expr:e -> e
+
+get2 = get2:obj optspace '.' optspace name:n           -> ['getattr', obj, n]
+     | get2:obj optspace '[' !(self.enter_paren()) slice:s !(self.leave_paren()) ']' -> ['getitem', obj, s]
+     | get2:obj optspace '(' csv('expr'):params ')'    -> ['call', obj, params]
+     | immediate
 
 immediate = number
           | string

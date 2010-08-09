@@ -16,8 +16,12 @@ expr = [:t apply(t):ans] -> ans
 augassign :op expr:l expr:r !(self.register_var(l)) -> '%s %s %s' % (l, op, r)
 assign expr:l expr:r !(self.register_var(l)) -> '%s = %s' % (l, r)
 
-get     expr:x expr:y     -> '%s.%s' % (x, y)
-getitem expr:x [expr+:fd] -> '%s[%s]' % (x, ', '.join(fd))
+get     expr:x            -> x
+getattr expr:x expr:y     -> '%s.%s' % (x, y)
+getitem expr:x ( ['slice' expr:start expr:end] -> '_$pyjs_getslice(%s, %s, %s)' % (x, start if start is not None else 'null', end if end is not None else 'null')
+               | expr:y   -> '%s[%s]' % (x, y)
+               )
+del     expr:x            -> 'delete %s' % x
 
 unop     :op expr:x        -> '(%s%s)' % (self.op_map.get(op, op), x)
 binop    :op expr:x expr:y -> '(%s %s %s)' % (x, self.binop_map.get(op, op), y)
