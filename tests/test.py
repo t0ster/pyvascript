@@ -15,6 +15,10 @@ class PyvaTest(TestCase):
             raise AssertionError('\n%s\n!=\n%s' % (repr(source), repr(result)))
 
 class Test(PyvaTest):
+    def test_in(self):
+        self.check('x in y', '(x in y);')
+        self.check('x not in y', '!(x in y);')
+
     def test_dot(self):
         self.check('x.y.z', 'x.y.z;')
 
@@ -28,8 +32,8 @@ class Test(PyvaTest):
         self.check('x[0][bla]', 'x[0][bla];')
 
     def test_hasattr(self):
-        self.check('hasattr(x, y)', '(typeof x[y] === "undefined");')
-        self.check('not hasattr(x, y)', '(typeof x[y] !== "undefined");')
+        self.check('hasattr(x, y)', '(typeof x[y] != "undefined");')
+        self.check('not hasattr(x, y)', '(typeof x[y] == "undefined");')
 
     def test_getattr(self):
         self.check('getattr(x, y)', 'x[y];')
@@ -246,7 +250,7 @@ class Test(PyvaTest):
             
             nested = function() {
               return null;
-            }
+            };
             
             a = 3;
             x = (a + 3);
