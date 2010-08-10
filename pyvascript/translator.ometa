@@ -35,6 +35,8 @@ string    :s       -> '"%s"' % s.encode('string_escape')
 new  expr:c                  -> 'new %s' % c
 
 call ['name' 'hasattr'] [expr:obj expr:attr] -> '(typeof %s[%s] === "undefined")' % (obj, attr)
+call ['name' 'getattr'] [expr:obj expr:attr] -> '%s[%s]' % (obj, attr)
+call ['name' 'setattr'] [expr:obj expr:attr expr:value] -> '%s[%s] = %s' % (obj, attr, value)
 call ['name' 'JS'] ([['string' :js]] -> '%s' % js
                    |[expr:js]        -> 'eval(%s)' % js
                    )
