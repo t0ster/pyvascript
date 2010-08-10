@@ -23,6 +23,7 @@ getitem expr:x ( ['slice' expr:start expr:end] -> '_$pyjs_getslice(%s, %s, %s)' 
                )
 del     expr:x            -> 'delete %s' % x
 
+unop     'not' ['call' ['name' 'hasattr'] [expr:obj expr:attr]] -> '(typeof %s[%s] !== "undefined")' % (obj, attr)
 unop     :op expr:x        -> '(%s%s)' % (self.op_map.get(op, op), x)
 binop    :op expr:x expr:y -> '(%s %s %s)' % (x, self.binop_map.get(op, op), y)
 
@@ -32,11 +33,12 @@ hexnumber :n       -> hex(n)
 string    :s       -> '"%s"' % s.encode('string_escape')
 
 new  expr:c                  -> 'new %s' % c
-call (['name' 'JS'] ([['string' :js]] -> '%s' % js
-                    |[expr:js]        -> 'eval(%s)' % js
-                    )
-     | expr:fn [expr*:args]           -> '%s(%s)' % (fn, ', '.join(args))
-     )
+
+call ['name' 'hasattr'] [expr:obj expr:attr] -> '(typeof %s[%s] === "undefined")' % (obj, attr)
+call ['name' 'JS'] ([['string' :js]] -> '%s' % js
+                   |[expr:js]        -> 'eval(%s)' % js
+                   )
+call expr:fn [expr*:args]            -> '%s(%s)' % (fn, ', '.join(args))
 
 list  !(self.indent()) expr*:xs !(self.dedent()) -> '[%s]' % ', '.join(xs)
 tuple !(self.indent()) expr*:xs !(self.dedent()) -> '[%s]' % ', '.join(xs)

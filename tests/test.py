@@ -27,6 +27,10 @@ class Test(PyvaTest):
         self.check('x[0]', 'x[0];')
         self.check('x[0][bla]', 'x[0][bla];')
 
+    def test_hasattr(self):
+        self.check('hasattr(x, y)', '(typeof x[y] === "undefined");')
+        self.check('not hasattr(x, y)', '(typeof x[y] !== "undefined");')
+
     def test_dot_getitem(self):
         self.check('x.y[0]', 'x.y[0];')
         self.check('x.y[0].z', 'x.y[0].z;')
