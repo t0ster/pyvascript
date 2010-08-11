@@ -4,9 +4,6 @@ def list(x):
         result.append(x)
     return result
 
-def tuple(x):
-    return list(x)
-
 def dict(x):
     result = {}
     for key in x:
@@ -21,12 +18,6 @@ def float(x):
 
 def str(x):
     return x.toString()
-
-def unicode(x):
-    return str(x)
-
-def len(x):
-    return x.length
 
 def _print(x):
     if console and console.log:
@@ -61,11 +52,11 @@ def isinstance(item, cls):
                 return True
         return False
 
-    if cls is tuple or cls is list:
+    if cls is list:
         cls = Array
     elif cls is dict:
         cls = Object
-    elif cls is str or cls is unicode:
+    elif cls is str:
         cls = String
     elif cls is int or cls is float:
         isnumber = item.constructor is Number.prototype.constructor
@@ -78,17 +69,10 @@ def _$pyva_iter(iter_object):
     # Use multiple isinstance checks because otherwise this leads to
     # infinite recursion
     if iter_object.callee and iter_object.length is not undefined or \
-            isinstance(iter_object, list) or isinstance(iter_object, tuple):
+            isinstance(iter_object, list):
         return iter_object
 
     key_list = []
     JS('for (var key in iter_object)')
     key_list.append(key)
     return key_list
-
-def _$pyva_getslice(item, start, end):
-    if start is None:
-        start = 0
-    if end is None:
-        return item.slice(start)
-    return item.slice(start, end)

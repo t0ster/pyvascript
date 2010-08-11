@@ -19,6 +19,9 @@ class Test(PyvaTest):
         self.check('x in y', '(x in y);')
         self.check('x not in y', '!(x in y);')
 
+    def test_len(self):
+        self.check('len(x)', 'x.length;')
+
     def test_dot(self):
         self.check('x.y.z', 'x.y.z;')
 
@@ -30,6 +33,17 @@ class Test(PyvaTest):
     def test_getitem(self):
         self.check('x[0]', 'x[0];')
         self.check('x[0][bla]', 'x[0][bla];')
+
+    def test_negative_getitem_special(self):
+        self.check('x[-1]', 'x.slice(-1)[0];')
+        self.check('x[-2]', 'x.slice(-2, -1)[0];')
+
+    def test_slicing(self):
+        self.check('x[:]', 'x.slice(0);')
+        self.check('x[3+3:]', 'x.slice((3 + 3));')
+        self.check('x[3+3:]', 'x.slice((3 + 3));')
+        self.check('x[:10]', 'x.slice(0, 10);')
+        self.check('x[5:10]', 'x.slice(5, 10);')
 
     def test_hasattr(self):
         self.check('hasattr(x, y)', '(typeof x[y] != "undefined");')

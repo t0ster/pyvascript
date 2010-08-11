@@ -10,11 +10,7 @@ list = function(x) {
   }
 
   return result;
-}
-
-tuple = function(x) {
-  return list(x);
-}
+};
 
 dict = function(x) {
   var key, result;
@@ -30,34 +26,26 @@ dict = function(x) {
   }
 
   return result;
-}
+};
 
 _$pyva_int = function(x) {
   return parseInt(x);
-}
+};
 
 _$pyva_float = function(x) {
   return parseFloat(x);
-}
+};
 
 str = function(x) {
   return x.toString();
-}
-
-unicode = function(x) {
-  return str(x);
-}
-
-len = function(x) {
-  return x.length;
-}
+};
 
 _print = function(x) {
   if ((console && console.log)) {
     console.log(x);
   }
 
-}
+};
 
 print = function() {
   var arg;
@@ -69,7 +57,7 @@ print = function() {
     _print(arg);
   }
 
-}
+};
 
 if ((!Array.prototype.append)) {
   Array.prototype.append = Array.prototype.push;
@@ -122,11 +110,11 @@ isinstance = function(item, cls) {
     return false;
   }
 
-  if (((cls === tuple) || (cls === list))) {
+  if ((cls === list)) {
     cls = Array;
   } else if ((cls === dict)) {
     cls = Object;
-  } else if (((cls === str) || (cls === unicode))) {
+  } else if ((cls === str)) {
     cls = String;
   } else if (((cls === _$pyva_int) || (cls === _$pyva_float))) {
     isnumber = (item.constructor === Number.prototype.constructor);
@@ -136,11 +124,11 @@ isinstance = function(item, cls) {
   }
 
   return (item.constructor === cls.prototype.constructor);
-}
+};
 
 _$pyva_iter = function(iter_object) {
   var key_list;
-  if ((((iter_object.callee && (iter_object.length !== undefined)) || isinstance(iter_object, list)) || isinstance(iter_object, tuple))) {
+  if (((iter_object.callee && (iter_object.length !== undefined)) || isinstance(iter_object, list))) {
     return iter_object;
   }
 
@@ -148,17 +136,5 @@ _$pyva_iter = function(iter_object) {
   for (var key in iter_object)
   key_list.append(key);
   return key_list;
-}
-
-_$pyva_getslice = function(item, start, end) {
-  if ((start === null)) {
-    start = 0;
-  }
-
-  if ((end === null)) {
-    return item.slice(start);
-  }
-
-  return item.slice(start, end);
-}
+};
 

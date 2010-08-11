@@ -74,17 +74,13 @@ callable = optspace
          | get
          )
 
-get = get2:g ( ?(g[0] in ('getattr', 'getitem')) -> ['get', g]
-             | -> g
-             )
-
 slice = expr?:start optspace ':' optspace expr?:end -> ['slice', start, end]
       | expr:e -> e
 
-get2 = get2:obj optspace '.' optspace name:n           -> ['getattr', obj, n]
-     | get2:obj optspace '[' !(self.enter_paren()) slice:s !(self.leave_paren()) ']' -> ['getitem', obj, s]
-     | get2:obj optspace '(' csv('expr'):params ')'    -> ['call', obj, params]
-     | immediate
+get = get:obj optspace '.' optspace name:n           -> ['getattr', obj, n]
+    | get:obj optspace '[' !(self.enter_paren()) slice:s !(self.leave_paren()) ']' -> ['getitem', obj, s]
+    | get:obj optspace '(' csv('expr'):params ')'    -> ['call', obj, params]
+    | immediate
 
 immediate = number
           | string

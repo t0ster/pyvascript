@@ -88,6 +88,8 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
         'self': 'this',
         'int': '_$pyva_int',
         'float': '_$pyva_float',
+        'tuple': 'list',
+        'unicode': 'str',
     }
 
     def __init__(self, *args, **kwargs):
