@@ -6,7 +6,7 @@ list = function(x) {
   for (var _$tmp3_index = 0; _$tmp3_index < _$tmp2_len; _$tmp3_index++) {
     item = _$tmp1_data[_$tmp3_index];
 
-    result.append(x);
+    result.append(item);
   }
 
   return result;
@@ -59,40 +59,27 @@ print = function() {
 
 };
 
-if ((!Array.prototype.append)) {
-  Array.prototype.append = Array.prototype.push;
-}
+Array.prototype.append = (function(item) {
+  this.push(item);
+});
+Array.prototype.insert = (function(index, item) {
+  this.splice(index, 0, item);
+});
+Array.prototype.extend = (function(items) {
+  var item;
+  var _$tmp10_data = _$pyva_iter(items);
+  var _$tmp11_len = _$tmp10_data.length;
+  for (var _$tmp12_index = 0; _$tmp12_index < _$tmp11_len; _$tmp12_index++) {
+    item = _$tmp10_data[_$tmp12_index];
 
-if ((!Array.prototype.insert)) {
-  Array.prototype.insert = (function(index, item) {
-    this.splice(index, 0, item);
-  });
-}
+    this.append(item);
+  }
 
-if ((!Array.prototype.extend)) {
-  Array.prototype.extend = (function(items) {
-    var item;
-    var _$tmp10_data = _$pyva_iter(items);
-    var _$tmp11_len = _$tmp10_data.length;
-    for (var _$tmp12_index = 0; _$tmp12_index < _$tmp11_len; _$tmp12_index++) {
-      item = _$tmp10_data[_$tmp12_index];
-
-      this.append(item);
-    }
-
-  });
-}
-
-if ((!Array.prototype.index)) {
-  Array.prototype.index = Array.prototype.indexOf;
-}
-
-if ((!String.prototype.join)) {
-  String.prototype.join = (function(iterable) {
-    return iterable.join(this);
-  });
-}
-
+});
+Array.prototype.index = Array.prototype.indexOf;
+String.prototype.join = (function(iterable) {
+  return iterable.join(this);
+});
 isinstance = function(item, cls) {
   var cls_item, isnumber;
   if (cls instanceof Array) {
@@ -128,7 +115,7 @@ isinstance = function(item, cls) {
 
 _$pyva_iter = function(iter_object) {
   var key_list;
-  if (((iter_object.callee && (iter_object.length !== undefined)) || isinstance(iter_object, list))) {
+  if (((iter_object.callee && (typeof iter_object["length"] != "undefined")) || isinstance(iter_object, list))) {
     return iter_object;
   }
 

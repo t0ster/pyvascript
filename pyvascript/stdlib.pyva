@@ -1,7 +1,7 @@
 def list(x):
     result = []
     for item in x:
-        result.append(x)
+        result.append(item)
     return result
 
 def dict(x):
@@ -29,21 +29,17 @@ def print():
 
 # Add a few base functions, so we don't have a hard time switching
 # from Python.
-if not Array.prototype.append:
-    Array.prototype.append = Array.prototype.push
-if not Array.prototype.insert:
-    Array.prototype.insert = def(self, index, item):
-                                 self.splice(index, 0, item)
-if not Array.prototype.extend:
-    Array.prototype.extend = def(self, items):
-                                 for item in items:
-                                     self.append(item)
-if not Array.prototype.index:
-    Array.prototype.index = Array.prototype.indexOf
+Array.prototype.append = def(self, item):
+                             self.push(item)
+Array.prototype.insert = def(self, index, item):
+                             self.splice(index, 0, item)
+Array.prototype.extend = def(self, items):
+                             for item in items:
+                                 self.append(item)
+Array.prototype.index = Array.prototype.indexOf
 
-if not String.prototype.join:
-    String.prototype.join = def(self, iterable):
-                                return iterable.join(self)
+String.prototype.join = def(self, iterable):
+                            return iterable.join(self)
 
 def isinstance(item, cls):
     if JS('cls instanceof Array'):
