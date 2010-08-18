@@ -11,7 +11,8 @@ dedent      = !(self.dedent())
 
 comment  = '#' line_rest:c -> ['comment', c]
 emptyline = hspace* ('\\' | comment)?:c vspace
-block     = emptyline* indent stmt:s optspace (vspace | end) line*:l dedent -> [s] + l
+block     = emptyline+ indent stmt:s optspace (vspace | end) line*:l dedent -> [s] + l
+block     = optspace stmt:s optspace ~~(vspace | end) -> [s]
 line      = emptyline*:e indentation stmt:s optspace (vspace | end) -> s
 line_rest = (~vspace :x)*:x -> ''.join(x)
 
@@ -131,8 +132,8 @@ while = "while" mandspace expr:cond optspace ':' block:body -> ['while', cond, b
 
 for   = "for" mandspace name:var mandspace "in" mandspace expr:data optspace ':' block:body -> ['for', var, data, body]
 
-def   = !(self.get_indent()):i "def" mandspace !(self.indent_stack.append(i)) name:name optspace '(' csv('name'):args ')' optspace ':' block:body !(self.indent_stack.pop()) -> ['func', name, args, body]
-deflambda = !(self.get_indent()):i "def" ~~(hspace | '(') !(self.enter_deflambda(i)) optspace '(' csv('name'):args ')' optspace ':' block:body !(self.leave_deflambda()) -> ['func', None, args, body]
+def   = "def" !(self.get_indent()):i mandspace !(self.indent_stack.append(i)) name:name optspace '(' csv('name'):args ')' optspace ':' block:body !(self.indent_stack.pop()) -> ['func', name, args, body]
+deflambda = "def" !(self.get_indent()):i ~~(hspace | '(') !(self.enter_deflambda(i)) optspace '(' csv('name'):args ')' optspace ':' block:body !(self.leave_deflambda()) -> ['func', None, args, body]
 lambda = "lambda" mandspace csv('name'):args optspace ':' expr:e -> ['func', None, args, [e]]
 
 try = "try" optspace ':' block:body

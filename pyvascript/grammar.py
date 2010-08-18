@@ -53,9 +53,13 @@ class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
         self.parenthesis = self.parenthesis_stack.pop()
 
     def get_indent(self):
+        start = self.input.position
         for index in reversed(range(self.input.position)):
-            if self.input.data[index] == '\n':
-                return self.input.position - (index + 1)
+            char = self.input.data[index]
+            if char == '\n':
+                return start - (index + 1)
+            elif char != ' ':
+                start = index
         return 0
 
     def dedent(self):

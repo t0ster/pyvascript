@@ -241,19 +241,32 @@ class Test(PyvaTest):
         }
         """)
 
+    def test_one_liners(self):
+        self.check("""
+        def f(): pass
+        while True: pass
+        for i in reversed(range(10)): pass
+        """, """
+        f = function() {
+        };
+        while (true) {
+        }
+        i = 10;
+        while (i--) {
+        }
+        """)
+
     def test_multi_line_lambda(self):
         self.check("""
         x.prototype = {
-            '__init__':
-            def(self):
+            '__init__': def(self):
                 def nested():
                     return None
                 a = 3
                 x = a + 3
                 return x
             ,
-            'add':
-            def(self, a, b, c):
+            'add': def(self, a, b, c):
                 return 1 + 2
             ,
         }

@@ -68,7 +68,7 @@ def isinstance(item, cls):
 def _$pyva_iter(iter_object):
     # Use multiple isinstance checks because otherwise this leads to
     # infinite recursion
-    if iter_object.callee and iter_object.length is not undefined or \
+    if iter_object.callee and hasattr(iter_object, 'length') or \
             isinstance(iter_object, list):
         return iter_object
 
