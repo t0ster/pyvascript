@@ -72,3 +72,9 @@ def _$pyva_iter(iter_object):
     JS('for (var key in iter_object)')
     key_list.append(key)
     return key_list
+
+Function.prototype.bind = def(self, owner):
+                              func = self
+                              def bound():
+                                  return func.apply(owner, arguments)
+                              return bound

@@ -115,7 +115,7 @@ isinstance = function(item, cls) {
 
 _$pyva_iter = function(iter_object) {
   var key_list;
-  if (((iter_object.callee && (typeof iter_object["length"] != "undefined")) || isinstance(iter_object, list))) {
+  if (((iter_object.callee && (typeof iter_object['length'] != "undefined")) || isinstance(iter_object, list))) {
     return iter_object;
   }
 
@@ -125,3 +125,12 @@ _$pyva_iter = function(iter_object) {
   return key_list;
 };
 
+Function.prototype.bind = (function(owner) {
+  var bound, func;
+  func = this;
+  bound = function() {
+    return func.apply(owner, arguments);
+  };
+
+  return bound;
+});
