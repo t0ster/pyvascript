@@ -27,8 +27,8 @@ class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
         'def', 'default', 'del', 'delete', 'do', 'elif', 'else', 'except',
         'false', 'finally', 'for', 'function', 'if', 'in', 'is', 'instanceof',
         'new', 'not', 'null', 'or', 'pass', 'raise', 'return', 'switch',
-        'this', 'throw', 'true', 'try', 'typeof', 'var', 'void', 'while',
-        'with', 'yield',))
+        'throw', 'true', 'try', 'typeof', 'var', 'void', 'while', 'with',
+        'yield',))
     hex_digits = '0123456789abcdef'
 
     def __init__(self, *args, **kwargs):
@@ -103,6 +103,11 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
         self.global_vars = set()
         self.var_stack = []
         self.temp_var_id = 0
+
+    def get_name(self, name):
+        if name == 'self' and name not in self.global_vars:
+            return name
+        return self.name_map.get(name, name)
 
     def make_temp_var(self, name, prefix='_$tmp'):
         self.temp_var_id += 1
@@ -232,12 +237,12 @@ class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
 
     def make_func(self, name, args, body):
         if name:
-            name = self.name_map.get(name[1], name[1])
+            name = self.get_name(name[1])
             self.register_var(name)
             func = '%s = function' % name
             body += ';'
         else:
             func = 'function'
-        if args and args[0] == self.name_map.get('self', 'self'):
+        if args and args[0] == self.get_name('self'):
             args = args[1:]
         return '%s(%s) %s' % (func, ', '.join(args), body)

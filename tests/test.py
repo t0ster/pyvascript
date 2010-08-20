@@ -300,3 +300,43 @@ class Test(PyvaTest):
           x = 5;
         })();
         """)
+
+    def test_self(self):
+        self.check("""
+        self.f()
+        """, """
+        self.f();
+        """)
+
+        self.check("""
+        def f():
+            self.f()
+        """, """
+        f = function() {
+          self.f();
+        };
+        """)
+
+        self.check("""
+        def f(self):
+            self.f()
+        """, """
+        f = function() {
+          this.f();
+        };
+        """)
+
+        self.check("""
+        def f(self):
+            myself = self
+            def g():
+                myself.f()
+        """, """
+        f = function() {
+          var g, myself;
+          myself = this;
+          g = function() {
+            myself.f();
+          };
+        };
+        """)
