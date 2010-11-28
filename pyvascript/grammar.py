@@ -1,5 +1,4 @@
 from pymeta.grammar import OMeta
-from pymeta.runtime import ParseError
 import os
 
 def compile(source):
