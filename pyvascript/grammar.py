@@ -1,28 +1,16 @@
 from pymeta.grammar import OMeta
-from pymeta.runtime import ParseError as OMetaParseError
+from pymeta.runtime import ParseError
 import os
 
 def compile(source):
-    return Translator.parse_source(Grammar.parse_source(source))
+    return Translator.parse(Grammar.parse(source))
 
 grammar_path = os.path.join(os.path.dirname(__file__), 'grammar.ometa')
 pyva_grammar = open(grammar_path, 'r').read()
 def p(s):
     print s
 
-class ParseError(Exception):
-    pass
-
-class BaseGrammar(object):
-    @classmethod
-    def parse_source(cls, source):
-        try:
-            parser = cls(source)
-            return parser.apply('grammar')[0]
-        except OMetaParseError:
-            raise ParseError(parser.currentError.formatError(source))
-
-class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
+class Grammar(OMeta.makeGrammar(pyva_grammar, {'p': p})):
     keywords = set(('and', 'as', 'break', 'case', 'catch', 'class', 'continue',
         'def', 'default', 'del', 'delete', 'do', 'elif', 'else', 'except',
         'false', 'finally', 'for', 'function', 'if', 'in', 'is', 'instanceof',
@@ -75,7 +63,7 @@ class Grammar(BaseGrammar, OMeta.makeGrammar(pyva_grammar, {'p': p})):
 
 translator_path = os.path.join(os.path.dirname(__file__), 'translator.ometa')
 pyva_translator = open(translator_path, 'r').read()
-class Translator(BaseGrammar, OMeta.makeGrammar(pyva_translator, {'p': p})):
+class Translator(OMeta.makeGrammar(pyva_translator, {'p': p})):
     op_map = {
         'not': '!',
     }
