@@ -35,7 +35,7 @@ binop    :op expr:x expr:y -> '(%s %s %s)' % (x, self.binop_map.get(op, op), y)
 name      :n       -> self.get_name(n)
 number    :n       -> str(n)
 hexnumber :n       -> hex(n)
-string    :s       -> "'%s'" % s.encode('string_escape')
+string    :s       -> "'%s'" % s.encode('utf8').encode('string_escape').decode('utf8')
 
 new  expr:c                  -> 'new %s' % c
 

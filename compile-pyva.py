@@ -8,7 +8,12 @@ if len(sys.argv) != 2:
 
 file_name = sys.argv[1].rsplit('.', 1)[0]
 
-g = Grammar.parse(open(sys.argv[1], 'r').read())
+fp = open(sys.argv[1], 'r')
+source = fp.read()
+fp.close()
+g = Grammar.parse(source)
 
+output = Translator.parse(g)
 new_file = open(file_name + '.js', 'w')
-new_file.write(Translator.parse(g))
+new_file.write(output)
+new_file.close()
