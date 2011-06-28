@@ -139,7 +139,8 @@ class Translator(OMeta.makeGrammar(pyva_translator, {'p': p})):
         indentstr = '  ' * indentation
         sep = '\n%s' % indentstr
         if self.local_vars:
-            var = '%svar %s;\n%s' % (indentstr, ', '.join(sorted(self.local_vars)), indentstr)
+            vars = ', '.join(sorted(self.local_vars))
+            var = '%svar %s;\n%s' % (indentstr, vars, indentstr)
         else:
             var = indentstr
         return '{\n%s%s\n%s}' % (var, sep.join(stmts), '  ' * (indentation - 1))
@@ -163,8 +164,10 @@ class Translator(OMeta.makeGrammar(pyva_translator, {'p': p})):
         index = self.make_temp_var('index')
         init = 'var %s = _$pyva_iter(%s);\n%svar %s = %s.length;\n%s' % (
             datavar, data, indentstr, lenvar, datavar, indentstr)
-        body = body.replace('{', '{\n%s%s = %s[%s];\n' % (indentstr + '  ', var, datavar, index), 1)
-        return '%sfor (var %s = 0; %s < %s; %s++) %s' % (init, index, index, lenvar, index, body)
+        body = body.replace('{', '{\n%s%s = %s[%s];\n'
+                            % (indentstr + '  ', var, datavar, index), 1)
+        return '%sfor (var %s = 0; %s < %s; %s++) %s' % (init, index, index, lenvar,
+                                                         index, body)
 
     def temp_var_or_literal(self, name, var, init):
         """
@@ -204,7 +207,8 @@ class Translator(OMeta.makeGrammar(pyva_translator, {'p': p})):
     def make_for_reversed_range(self, var, for_range, body):
         indentstr = '  ' * self.indentation
         if len(for_range) == 1:
-            return '%s = %s;\n%swhile (%s--) %s' % (var, for_range[0][1], indentstr, var, body)
+            return '%s = %s;\n%swhile (%s--) %s' % (var, for_range[0][1], indentstr,
+                                                    var, body)
 
         init = []
         start = for_range[1][1]
