@@ -12,7 +12,7 @@ def p(s):
 class Grammar(OMeta.makeGrammar(pyva_grammar, {'p': p})):
     keywords = set(('and', 'as', 'break', 'case', 'catch', 'class', 'continue',
         'def', 'default', 'del', 'delete', 'do', 'elif', 'else', 'except',
-        'false', 'finally', 'for', 'function', 'if', 'in', 'is', 'instanceof',
+        'false', 'finally', 'for', 'function', 'if', 'in', 'instanceof',
         'new', 'not', 'null', 'or', 'pass', 'raise', 'return', 'switch',
         'throw', 'true', 'try', 'typeof', 'var', 'void', 'while', 'with',
         'yield',))
