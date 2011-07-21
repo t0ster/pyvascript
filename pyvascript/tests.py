@@ -90,12 +90,31 @@ class Test(PyvaTest):
         }
         """)
 
+    def test_return_expression(self):
+        self.check("""
+        def():
+            return a < 5 and 6 >= b or 2 <= 8
+        """, """
+        function() {
+          return (((a < 5) && (6 >= b)) || (2 <= 8));
+        }
+        """)
+
     def test_if(self):
         self.check("""
         if a == 3 or b is None and c == True or d != False:
             f()
         """, """
         if ((((a == 3) || ((b === null) && (c == true))) || (d != false))) {
+          f();
+        }
+        """)
+
+        self.check("""
+        if a < 5 and 6 >= b or 2 <= 8:
+            f()
+        """, """
+        if ((((a < 5) && (6 >= b)) || (2 <= 8))) {
           f();
         }
         """)
@@ -113,7 +132,7 @@ class Test(PyvaTest):
           if (x) {
             break;
           }
-          
+
           continue;
         }
         """)
@@ -236,7 +255,7 @@ class Test(PyvaTest):
         var _$tmp2_len = _$tmp1_data.length;
         for (var _$tmp3_index = 0; _$tmp3_index < _$tmp2_len; _$tmp3_index++) {
           i = _$tmp1_data[_$tmp3_index];
-          
+
           f(i);
         }
         """)
@@ -274,11 +293,11 @@ class Test(PyvaTest):
         x.prototype = {
           '__init__': (function() {
             var a, nested, x;
-            
+
             nested = function() {
               return null;
             };
-            
+
             a = 3;
             x = (a + 3);
             return x;

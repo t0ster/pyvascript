@@ -50,7 +50,7 @@ comparison = ( "in"                 -> 'in'
              | "is" mandspace "not" -> 'is not'
              | "is"                 -> 'is'
              ):x mandspace -> x
-           | "<" | "<=" | ">" | ">=" | "!=" | "=="
+           | "<=" | ">=" | "<" | ">" | "!=" | "=="
 cmpop = cmpop:l optspace comparison:op optspace bitor:r -> ['binop', op, l, r]
       | bitor
 bitor = bitor:l optspace '|':op bitxor:r -> ['binop', op, l, r]
